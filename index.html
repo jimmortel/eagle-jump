@@ -1,71 +1,55 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Eagle-Jump</title>
+    <title>Eagle Jump</title>
     <style>
-        body { margin: 0; background: #000; overflow: hidden; display: flex; justify-content: center; align-items: center; height: 100vh; width: 100vw; }
-        canvas { background: #87CEEB; touch-action: none; width: 100%; height: 100%; max-width: 400px; max-height: 600px; }
+        body { margin: 0; background: #000; overflow: hidden; display: flex; justify-content: center; align-items: center; height: 100vh; width: 100vw; position: fixed; }
+        canvas { background: #87CEEB; touch-action: none; max-width: 100%; max-height: 100%; object-fit: contain; }
     </style>
 </head>
 <body>
     <canvas id="gameCanvas"></canvas>
+
+    <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
         canvas.width = 320;
         canvas.height = 480;
 
-        let eagle = { 
-            x: 140, y: 200, width: 40, height: 30, 
-            vy: 0, vx: 0, // Ajout de la vitesse horizontale
-            jumpPower: -10, gravity: 0.4 
-        };
-
+        let eagle = { x: 140, y: 200, width: 40, height: 30, vy: 0, vx: 0, jumpPower: -10, gravity: 0.4 };
         let platforms = [];
         let score = 0;
-        let gameRunning = true;
-
-        for (let i = 0; i < 7; i++) {
-            platforms.push({
-                x: Math.random() * (canvas.width - 60),
-                y: canvas.height - (i * 80),
-                width: 60, height: 12
-            });
-        }
-
-        // Contrôles tactiles fluides
         let moveLeft = false;
         let moveRight = false;
+
+        for (let i = 0; i < 7; i++) {
+            platforms.push({ x: Math.random() * (canvas.width - 60), y: canvas.height - (i * 80), width: 60, height: 12 });
+        }
 
         canvas.addEventListener('touchstart', (e) => {
             const touchX = e.touches[0].clientX;
             if (touchX < window.innerWidth / 2) moveLeft = true;
             else moveRight = true;
             e.preventDefault();
-        });
+        }, {passive: false});
 
-        canvas.addEventListener('touchend', () => {
-            moveLeft = false;
-            moveRight = false;
-        });
+        canvas.addEventListener('touchend', () => { moveLeft = false; moveRight = false; });
 
         function update() {
-            // Physique horizontale (inertie)
             if (moveLeft) eagle.vx = -5;
             else if (moveRight) eagle.vx = 5;
-            else eagle.vx *= 0.9; // Ralentissement progressif
+            else eagle.vx *= 0.8;
 
             eagle.x += eagle.vx;
             eagle.vy += eagle.gravity;
             eagle.y += eagle.vy;
 
-            // Sortie d'écran (Wraparound)
             if (eagle.x + eagle.width < 0) eagle.x = canvas.width;
             if (eagle.x > canvas.width) eagle.x = -eagle.width;
 
-            // Rebond
             if (eagle.vy > 0) {
                 platforms.forEach(p => {
                     if (eagle.x + eagle.width > p.x && eagle.x < p.x + p.width &&
@@ -75,56 +59,44 @@
                 });
             }
 
-            // Caméra
             if (eagle.y < canvas.height / 2) {
                 let diff = (canvas.height / 2) - eagle.y;
                 eagle.y = canvas.height / 2;
                 score += Math.floor(diff / 10);
                 platforms.forEach(p => {
                     p.y += diff;
-                    if (p.y > canvas.height) {
-                        p.y = 0;
-                        p.x = Math.random() * (canvas.width - 60);
-                    }
+                    if (p.y > canvas.height) { p.y = 0; p.x = Math.random() * (canvas.width - 60); }
                 });
             }
 
-            if (eagle.y > canvas.height) {
-                eagle.y = 200; eagle.vy = 0; eagle.vx = 0; score = 0;
-            }
-
+            if (eagle.y > canvas.height) { eagle.y = 200; eagle.vy = 0; eagle.vx = 0; score = 0; }
             draw();
             requestAnimationFrame(update);
         }
 
         function draw() {
-            // Fond dégradé (Aube)
-            let gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-            gradient.addColorStop(0, "#87CEEB");
-            gradient.addColorStop(1, "#E0F6FF");
-            ctx.fillStyle = gradient;
+            ctx.fillStyle = "#87CEEB";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Dessin Aigle (Style Stylisé)
+            // Aigle (Triangle)
             ctx.fillStyle = "#333";
             ctx.beginPath();
-            ctx.moveTo(eagle.x + eagle.width/2, eagle.y); // Tête
-            ctx.lineTo(eagle.x + eagle.width, eagle.y + eagle.height); // Aile droite
-            ctx.lineTo(eagle.x, eagle.y + eagle.height); // Aile gauche
+            ctx.moveTo(eagle.x + eagle.width/2, eagle.y);
+            ctx.lineTo(eagle.x + eagle.width, eagle.y + eagle.height);
+            ctx.lineTo(eagle.x, eagle.y + eagle.height);
             ctx.fill();
 
-            // Dessin Ailes (Effet relief)
+            // Plateformes
             platforms.forEach(p => {
-                ctx.fillStyle = "#7F8C8D"; // Ombre
-                ctx.fillRect(p.x, p.y + 4, p.width, p.height);
-                ctx.fillStyle = "#BDC3C7"; // Face
-                ctx.fillRect(p.x, p.y, p.width, p.height);
+                ctx.fillStyle = "#7F8C8D"; ctx.fillRect(p.x, p.y + 4, p.width, p.height);
+                ctx.fillStyle = "#BDC3C7"; ctx.fillRect(p.x, p.y, p.width, p.height);
             });
 
-            // Score HUD
             ctx.fillStyle = "#2C3E50";
             ctx.font = "bold 20px Arial";
             ctx.fillText(score + " m", 20, 40);
         }
-
         update();
+    </script>
+</body>
+</html>
