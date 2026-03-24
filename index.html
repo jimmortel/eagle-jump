@@ -12,12 +12,11 @@
 <body>
     <canvas id="gameCanvas"></canvas>
     <script>
-                const canvas = document.getElementById('gameCanvas');
+        const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         canvas.width = 320;
         canvas.height = 480;
-
-        const imgEagle = new Image();
+                const imgEagle = new Image();
         imgEagle.src = '1000009474.png'; 
 
         let eagleLoaded = false;
@@ -46,14 +45,11 @@
             if (moveLeft) eagle.vx = -7;
             else if (moveRight) eagle.vx = 7;
             else eagle.vx *= 0.8;
-
             eagle.x += eagle.vx;
             eagle.vy += eagle.gravity;
             eagle.y += eagle.vy;
-
             if (eagle.x + eagle.width < 0) eagle.x = canvas.width;
             if (eagle.x > canvas.width) eagle.x = -eagle.width;
-
             if (eagle.vy > 0) {
                 platforms.forEach(p => {
                     if (eagle.x + eagle.width > p.x && eagle.x < p.x + p.width &&
@@ -62,7 +58,6 @@
                     }
                 });
             }
-
             if (eagle.y < canvas.height * 0.7) {
                 let diff = (canvas.height * 0.7) - eagle.y;
                 eagle.y = canvas.height * 0.7;
@@ -72,12 +67,10 @@
                     if (p.y > canvas.height) { p.y = 0; p.x = Math.random() * (canvas.width - 60); }
                 });
             }
-
             if (eagle.y > canvas.height) { 
                 if (score > highscore) { highscore = score; localStorage.setItem('eagleRecord', highscore); }
                 eagle.y = 100; eagle.vy = 0; score = 0; 
             }
-
             draw();
             requestAnimationFrame(update);
         }
@@ -88,19 +81,16 @@
             grd.addColorStop(1, "#00f2fe");
             ctx.fillStyle = grd;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-
             if (eagleLoaded) {
                 ctx.drawImage(imgEagle, eagle.x, eagle.y, eagle.width, eagle.height);
             } else {
                 ctx.fillStyle = "#D4AF37";
                 ctx.fillRect(eagle.x, eagle.y, eagle.width, eagle.height);
             }
-
             platforms.forEach(p => {
                 ctx.fillStyle = "#B7950B"; ctx.fillRect(p.x, p.y + 4, p.width, p.height);
                 ctx.fillStyle = "#F1C40F"; ctx.fillRect(p.x, p.y, p.width, p.height);
             });
-
             ctx.fillStyle = "white";
             ctx.font = "bold 20px Arial";
             ctx.fillText(score + " m", 20, 40);
