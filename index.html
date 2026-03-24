@@ -13,61 +13,110 @@
 
     <canvas id="gameCanvas" width="320" height="480"></canvas>
 
-    <script>
-        const canvas = document.getElementById('gameCanvas');
+            const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
-        // --- CONFIGURATION EAGLE ---
+        // --- CONFIGURATION ---
         let eagle = {
-            x: 140,
-            y: 350,
-            width: 40,
-            height: 40,
-            vy: 0,
-            jumpPower: -10,
-            gravity: 0.4
+            x: 140, y: 350, width: 40, height: 40,
+            vy: 0, jumpPower: -10, gravity: 0.35
         };
 
         let platforms = [];
+        let score = 0;
         let gameRunning = true;
 
-        // --- LOGIQUE PLATEFORMES (AILES) ---
+        // --- GÉNÉRATION DES AILES ---
         function createPlatform(y) {
             return {
                 x: Math.random() * (canvas.width - 60),
                 y: y,
-                width: 60,
-                height: 15
+                width: 60, height: 15
             };
         }
 
-        // Initialisation : on en place quelques-unes
+        // Initialisation : 7 plateformes étagées
         for (let i = 0; i < 7; i++) {
-            platforms.push(createPlatform(i * 70));
+            platforms.push(createPlatform(canvas.height - (i * 80)));
+        }
+
+        // --- CONTRÔLES (OPPO FRIENDLY) ---
+        window.addEventListener('keydown', (e) => {
+            if (e.key === "ArrowLeft") eagle.x -= 20;
+            if (e.key === "ArrowRight") eagle.x += 20;
+        });
+
+        // Tactile pour ton écran Oppo
+        canvas.addEventListener('touchstart', (e) => {
+            let touchX = e.touches[0].clientX;
+            if (touchX < window.innerWidth / 2) eagle.x -= 30;
+            else eagle.x += 30;
+        });
+
+        function update() {
+            if (!gameRunning) return;
+
+            // 1. Physique de l'aigle
+            eagle.vy += eagle.gravity;
+            eagle.y += eagle.vy;
+
+            // 2. Collision avec les plateformes (uniquement en tombant)
+            if (eagle.vy > 0) {
+                platforms.forEach(p => {
+                    if (eagle.x + eagle.width > p.x && 
+                        eagle.x < p.x + p.width &&
+                        eagle.y + eagle.height > p.y && 
+                        eagle.y + eagle.height < p.y + p.height + eagle.vy) {
+                        eagle.vy = eagle.jumpPower; // REBOND !
+                    }
+                });
+            }
+
+            // 3. Caméra : Si l'aigle monte trop haut, on fait descendre tout le reste
+            if (eagle.y < canvas.height / 2) {
+                let diff = canvas.height / 2 - eagle.y;
+                eagle.y = canvas.height / 2;
+                score += Math.floor(diff / 10);
+                
+                platforms.forEach(p => {
+                    p.y += diff;
+                    // Si une plateforme sort par le bas, on la remet en haut
+                    if (p.y > canvas.height) {
+                        p.y = 0;
+                        p.x = Math.random() * (canvas.width - 60);
+                    }
+                });
+            }
+
+            // 4. Game Over
+            if (eagle.y > canvas.height) {
+                gameRunning = false;
+                alert("GAME OVER ! Score : " + score + "\nCliquez pour rejouer.");
+                location.reload();
+            }
+
+            draw();
+            requestAnimationFrame(update);
         }
 
         function draw() {
-            // Effacer le canvas
             ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-            // Dessiner l'aigle (un carré pour l'instant)
+            // Dessin Aigle
             ctx.fillStyle = "#333";
             ctx.fillRect(eagle.x, eagle.y, eagle.width, eagle.height);
 
-            // Dessiner les plateformes (ailes)
-            ctx.fillStyle = "#C0C0C0"; // Argent
-            platforms.forEach(p => {
-                ctx.fillRect(p.x, p.y, p.width, p.height);
-            });
-        }
+            // Dessin Ailes
+            ctx.fillStyle = "#C0C0C0";
+            platforms.forEach(p => ctx.fillRect(p.x, p.y, p.width, p.height));
 
-        // Boucle de rendu
-        function update() {
-            draw();
-            if (gameRunning) requestAnimationFrame(update);
+            // Score
+            ctx.fillStyle = "black";
+            ctx.font = "20px Arial";
+            ctx.fillText("Altitude: " + score + "m", 10, 30);
         }
 
         update();
-    </script>
+                </script>
 </body>
 </html>
