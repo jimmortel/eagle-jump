@@ -12,7 +12,7 @@
 <body>
     <canvas id="gameCanvas"></canvas>
 
-    <script>
+        <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         canvas.width = 320;
@@ -20,20 +20,28 @@
 
         // --- CHARGEMENT DES IMAGES ---
         const imgEagle = new Image();
-        imgEagle.src = '1000009475.jpg'; // Ton aigle doré
+        // Force le nom exact que tu as sur GitHub
+        imgEagle.src = '1000009475.jpg'; 
 
-        // --- VARIABLES ---
-        let eagle = { x: 140, y: 100, width: 60, height: 60, vy: 0, vx: 0, jumpPower: -12, gravity: 0.45 };
+        let eagleLoaded = false;
+        imgEagle.onload = () => { eagleLoaded = true; };
+        imgEagle.onerror = () => { console.log("L'image n'a pas pu charger"); };
+
+        // --- VARIABLES JEU ---
+        let eagle = { x: 130, y: 100, width: 60, height: 60, vy: 0, vx: 0, jumpPower: -12, gravity: 0.45 };
         let platforms = [];
         let score = 0;
-        let highscore = localStorage.getItem('eagleRecord') || 0; // Sauvegarde le record sur le téléphone
+        let highscore = localStorage.getItem('eagleRecord') || 0;
         let moveLeft = false;
         let moveRight = false;
 
+        // Génération des plateformes
         for (let i = 0; i < 7; i++) {
-            platforms.push({ x: Math.random() * (canvas.width - 60), y: canvas.height - (i * 80), width: 60, height: 15 });
+            platforms.push({ x: Math.random() * (canvas.width - 60), y: canvas.height - (i * 80), width: 60, height: 12 });
         }
-platforms.push({ x: 120, y: 350, width: 80, height: 12 });
+        // Plateforme de départ GARANTIE
+        platforms.push({ x: 110, y: 380, width: 100, height: 15 });
+
         // --- CONTRÔLES ---
         canvas.addEventListener('touchstart', (e) => {
             const touchX = e.touches[0].clientX;
@@ -44,8 +52,8 @@ platforms.push({ x: 120, y: 350, width: 80, height: 12 });
         canvas.addEventListener('touchend', () => { moveLeft = false; moveRight = false; });
 
         function update() {
-            if (moveLeft) eagle.vx = -6;
-            else if (moveRight) eagle.vx = 6;
+            if (moveLeft) eagle.vx = -7;
+            else if (moveRight) eagle.vx = 7;
             else eagle.vx *= 0.8;
 
             eagle.x += eagle.vx;
@@ -74,13 +82,9 @@ platforms.push({ x: 120, y: 350, width: 80, height: 12 });
                 });
             }
 
-            // --- GESTION DU RECORD ---
             if (eagle.y > canvas.height) { 
-                if (score > highscore) {
-                    highscore = score;
-                    localStorage.setItem('eagleRecord', highscore); // Sauvegarde
-                }
-                eagle.y = 300; eagle.vy = 0; eagle.vx = 0; score = 0; 
+                if (score > highscore) { highscore = score; localStorage.setItem('eagleRecord', highscore); }
+                eagle.y = 100; eagle.vy = 0; score = 0; 
             }
 
             draw();
@@ -88,30 +92,27 @@ platforms.push({ x: 120, y: 350, width: 80, height: 12 });
         }
 
         function draw() {
-            let skyColor = "#87CEEB"; 
-            if (score > 500) skyColor = "#4A90E2";
-            if (score > 1500) skyColor = "#1A2A6C";
-            if (score > 3000) skyColor = "#050505";
-            ctx.fillStyle = skyColor;
+            ctx.fillStyle = "#87CEEB";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Dessin de l'Aigle (Image)
-            ctx.drawImage(imgEagle, eagle.x, eagle.y, eagle.width, eagle.height);
+            // DESSIN AIGLE (Sécurité : si pas d'image, on dessine un carré)
+            if (eagleLoaded) {
+                ctx.drawImage(imgEagle, eagle.x, eagle.y, eagle.width, eagle.height);
+            } else {
+                ctx.fillStyle = "yellow";
+                ctx.fillRect(eagle.x, eagle.y, eagle.width, eagle.height);
+            }
 
-            // Dessin Plateformes
-            ctx.fillStyle = "#D4AF37"; // Couleur Or pour aller avec l'aigle
-            platforms.forEach(p => {
-                ctx.fillRect(p.x, p.y, p.width, p.height);
-            });
+            ctx.fillStyle = "#F4D03F";
+            platforms.forEach(p => { ctx.fillRect(p.x, p.y, p.width, p.height); });
 
-            // Affichage Score & Record
-            ctx.fillStyle = score > 1500 ? "white" : "#2C3E50";
-            ctx.font = "bold 18px Arial";
-            ctx.fillText("Altitude: " + score + "m", 15, 30);
+            ctx.fillStyle = "#2C3E50";
+            ctx.font = "bold 20px Arial";
+            ctx.fillText("Altitude: " + score + "m", 15, 35);
             ctx.font = "14px Arial";
-            ctx.fillText("Record: " + highscore + "m", 15, 55);
+            ctx.fillText("Record: " + highscore + "m", 15, 60);
         }
         update();
-    </script>
+            </script>
 </body>
 </html>
