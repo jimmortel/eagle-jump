@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Eagle Jump Pro</title>
+    <title>Eagle Jump Gold</title>
     <style>
         body { margin: 0; background: #000; overflow: hidden; display: flex; justify-content: center; align-items: center; height: 100vh; width: 100vw; position: fixed; }
-        canvas { background: #87CEEB; touch-action: none; width: 100%; height: 100%; max-width: 360px; max-height: 640px; object-fit: contain; border: 2px solid #333; }
+        canvas { background: #87CEEB; touch-action: none; width: 90vw; height: 85vh; max-width: 320px; max-height: 480px; object-fit: contain; border: 3px solid #D4AF37; }
     </style>
 </head>
 <body>
@@ -15,29 +15,32 @@
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
-
-        // Résolution fixe pour éviter l'effet "écrasé"
         canvas.width = 320;
-        canvas.height = 500;
+        canvas.height = 480;
 
-        let eagle = { x: 140, y: 300, width: 40, height: 30, vy: 0, vx: 0, jumpPower: -11, gravity: 0.45 };
+        // --- CHARGEMENT DES IMAGES ---
+        const imgEagle = new Image();
+        imgEagle.src = '1000009474.png'; // Ton aigle doré
+
+        // --- VARIABLES ---
+        let eagle = { x: 140, y: 300, width: 50, height: 40, vy: 0, vx: 0, jumpPower: -11, gravity: 0.4 };
         let platforms = [];
         let score = 0;
+        let highscore = localStorage.getItem('eagleRecord') || 0; // Sauvegarde le record sur le téléphone
         let moveLeft = false;
         let moveRight = false;
 
-        // Génération initiale
         for (let i = 0; i < 7; i++) {
-            platforms.push({ x: Math.random() * (canvas.width - 60), y: canvas.height - (i * 80), width: 60, height: 12 });
+            platforms.push({ x: Math.random() * (canvas.width - 60), y: canvas.height - (i * 80), width: 60, height: 15 });
         }
 
+        // --- CONTRÔLES ---
         canvas.addEventListener('touchstart', (e) => {
             const touchX = e.touches[0].clientX;
             if (touchX < window.innerWidth / 2) moveLeft = true;
             else moveRight = true;
             e.preventDefault();
         }, {passive: false});
-
         canvas.addEventListener('touchend', () => { moveLeft = false; moveRight = false; });
 
         function update() {
@@ -52,7 +55,6 @@
             if (eagle.x + eagle.width < 0) eagle.x = canvas.width;
             if (eagle.x > canvas.width) eagle.x = -eagle.width;
 
-            // Rebond
             if (eagle.vy > 0) {
                 platforms.forEach(p => {
                     if (eagle.x + eagle.width > p.x && eagle.x < p.x + p.width &&
@@ -62,7 +64,6 @@
                 });
             }
 
-            // SCORE & CAMÉRA (Déclenchement très bas pour forcer le score)
             if (eagle.y < canvas.height * 0.7) {
                 let diff = (canvas.height * 0.7) - eagle.y;
                 eagle.y = canvas.height * 0.7;
@@ -73,39 +74,42 @@
                 });
             }
 
-            if (eagle.y > canvas.height) { eagle.y = 300; eagle.vy = 0; eagle.vx = 0; score = 0; }
+            // --- GESTION DU RECORD ---
+            if (eagle.y > canvas.height) { 
+                if (score > highscore) {
+                    highscore = score;
+                    localStorage.setItem('eagleRecord', highscore); // Sauvegarde
+                }
+                eagle.y = 300; eagle.vy = 0; eagle.vx = 0; score = 0; 
+            }
+
             draw();
             requestAnimationFrame(update);
         }
 
         function draw() {
-            // Ciel dynamique
             let skyColor = "#87CEEB"; 
-            if (score > 200) skyColor = "#4A90E2";
-            if (score > 1000) skyColor = "#1A2A6C";
-            if (score > 2500) skyColor = "#050505";
-
+            if (score > 500) skyColor = "#4A90E2";
+            if (score > 1500) skyColor = "#1A2A6C";
+            if (score > 3000) skyColor = "#050505";
             ctx.fillStyle = skyColor;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Aigle
-            ctx.fillStyle = "#333";
-            ctx.beginPath();
-            ctx.moveTo(eagle.x + eagle.width/2, eagle.y);
-            ctx.lineTo(eagle.x + eagle.width, eagle.y + eagle.height);
-            ctx.lineTo(eagle.x, eagle.y + eagle.height);
-            ctx.fill();
+            // Dessin de l'Aigle (Image)
+            ctx.drawImage(imgEagle, eagle.x, eagle.y, eagle.width, eagle.height);
 
-            // Plateformes
+            // Dessin Plateformes
+            ctx.fillStyle = "#D4AF37"; // Couleur Or pour aller avec l'aigle
             platforms.forEach(p => {
-                ctx.fillStyle = "#7F8C8D"; ctx.fillRect(p.x, p.y + 4, p.width, p.height);
-                ctx.fillStyle = "#BDC3C7"; ctx.fillRect(p.x, p.y, p.width, p.height);
+                ctx.fillRect(p.x, p.y, p.width, p.height);
             });
 
-            // Score
-            ctx.fillStyle = score > 1000 ? "white" : "#2C3E50";
-            ctx.font = "bold 20px Arial";
-            ctx.fillText(score + " m", 20, 40);
+            // Affichage Score & Record
+            ctx.fillStyle = score > 1500 ? "white" : "#2C3E50";
+            ctx.font = "bold 18px Arial";
+            ctx.fillText("Altitude: " + score + "m", 15, 30);
+            ctx.font = "14px Arial";
+            ctx.fillText("Record: " + highscore + "m", 15, 55);
         }
         update();
     </script>
