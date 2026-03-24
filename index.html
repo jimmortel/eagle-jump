@@ -74,11 +74,31 @@
             requestAnimationFrame(update);
         }
 
-        function draw() {
-            ctx.fillStyle = "#87CEEB";
+                function draw() {
+            // 1. CALCUL DE LA COULEUR DU CIEL SELON L'ALTITUDE
+            let skyColor;
+            if (score < 500) {
+                skyColor = "#87CEEB"; // Bleu Jour
+            } else if (score < 1500) {
+                skyColor = "#4A90E2"; // Bleu Profond
+            } else if (score < 3000) {
+                skyColor = "#1A2A6C"; // Bleu Nuit
+            } else {
+                skyColor = "#050505"; // Espace
+            }
+
+            ctx.fillStyle = skyColor;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Aigle (Triangle)
+            // 2. AJOUT DE PETITES ÉTOILES (si on est assez haut)
+            if (score > 1500) {
+                ctx.fillStyle = "white";
+                for(let i=0; i<10; i++) {
+                    ctx.fillRect(Math.sin(i*score)*canvas.width, (i*50)%canvas.height, 2, 2);
+                }
+            }
+
+            // 3. DESSIN AIGLE (Triangle)
             ctx.fillStyle = "#333";
             ctx.beginPath();
             ctx.moveTo(eagle.x + eagle.width/2, eagle.y);
@@ -86,13 +106,14 @@
             ctx.lineTo(eagle.x, eagle.y + eagle.height);
             ctx.fill();
 
-            // Plateformes
+            // 4. PLATEFORMES
             platforms.forEach(p => {
                 ctx.fillStyle = "#7F8C8D"; ctx.fillRect(p.x, p.y + 4, p.width, p.height);
                 ctx.fillStyle = "#BDC3C7"; ctx.fillRect(p.x, p.y, p.width, p.height);
             });
 
-            ctx.fillStyle = "#2C3E50";
+            // 5. SCORE (On le met en blanc si le ciel est sombre)
+            ctx.fillStyle = score > 1500 ? "white" : "#2C3E50";
             ctx.font = "bold 20px Arial";
             ctx.fillText(score + " m", 20, 40);
         }
