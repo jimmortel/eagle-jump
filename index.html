@@ -1,103 +1,71 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Eagle-Jump | Powered by eagle-pi</title>
-        <style>
-        body { 
-            margin: 0; 
-            background: #000; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            height: 100vh; 
-            width: 100vw;
-            overflow: hidden; 
-            font-family: sans-serif; 
-            touch-action: none; /* Empêche le zoom quand on touche l'écran */
-        }
-        canvas { 
-            background: #87CEEB; 
-            max-width: 100%; 
-            max-height: 100%;
-            object-fit: contain;
-            box-shadow: 0 0 20px rgba(0,0,0,0.5); 
-        }
+    <title>Eagle-Jump</title>
+    <style>
+        body { margin: 0; background: #000; overflow: hidden; display: flex; justify-content: center; align-items: center; height: 100vh; width: 100vw; }
+        canvas { background: #87CEEB; touch-action: none; width: 100%; height: 100%; max-width: 400px; max-height: 600px; }
     </style>
 </head>
 <body>
+    <canvas id="gameCanvas"></canvas>
 
-    <canvas id="gameCanvas" width="320" height="480"></canvas>
-
-            const canvas = document.getElementById('gameCanvas');
+    <script>
+        const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
-        // --- CONFIGURATION ---
-        let eagle = {
-            x: 140, y: 350, width: 40, height: 40,
-            vy: 0, jumpPower: -10, gravity: 0.35
-        };
+        // Ajustement automatique de la résolution interne
+        canvas.width = 320;
+        canvas.height = 480;
 
+        let eagle = { x: 140, y: 200, width: 40, height: 40, vy: 0, jumpPower: -10, gravity: 0.4 };
         let platforms = [];
         let score = 0;
         let gameRunning = true;
 
-        // --- GÉNÉRATION DES AILES ---
-        function createPlatform(y) {
-            return {
-                x: Math.random() * (canvas.width - 60),
-                y: y,
-                width: 60, height: 15
-            };
-        }
-
-        // Initialisation : 7 plateformes étagées
+        // Créer les plateformes initiales
         for (let i = 0; i < 7; i++) {
-            platforms.push(createPlatform(canvas.height - (i * 80)));
+            platforms.push({
+                x: Math.random() * (canvas.width - 60),
+                y: canvas.height - (i * 80),
+                width: 60, height: 15
+            });
         }
 
-        // --- CONTRÔLES (OPPO FRIENDLY) ---
-        window.addEventListener('keydown', (e) => {
-            if (e.key === "ArrowLeft") eagle.x -= 20;
-            if (e.key === "ArrowRight") eagle.x += 20;
-        });
-
-        // Tactile pour ton écran Oppo
+        // Contrôles tactiles simplifiés
         canvas.addEventListener('touchstart', (e) => {
-            let touchX = e.touches[0].clientX;
-            if (touchX < window.innerWidth / 2) eagle.x -= 30;
+            const touchX = e.touches[0].clientX;
+            const screenMid = window.innerWidth / 2;
+            if (touchX < screenMid) eagle.x -= 30;
             else eagle.x += 30;
-        });
+            e.preventDefault();
+        }, {passive: false});
 
         function update() {
             if (!gameRunning) return;
 
-            // 1. Physique de l'aigle
             eagle.vy += eagle.gravity;
             eagle.y += eagle.vy;
 
-            // 2. Collision avec les plateformes (uniquement en tombant)
+            // Rebond
             if (eagle.vy > 0) {
                 platforms.forEach(p => {
-                    if (eagle.x + eagle.width > p.x && 
-                        eagle.x < p.x + p.width &&
-                        eagle.y + eagle.height > p.y && 
-                        eagle.y + eagle.height < p.y + p.height + eagle.vy) {
-                        eagle.vy = eagle.jumpPower; // REBOND !
+                    if (eagle.x + eagle.width > p.x && eagle.x < p.x + p.width &&
+                        eagle.y + eagle.height > p.y && eagle.y + eagle.height < p.y + p.height + eagle.vy) {
+                        eagle.vy = eagle.jumpPower;
                     }
                 });
             }
 
-            // 3. Caméra : Si l'aigle monte trop haut, on fait descendre tout le reste
+            // Caméra
             if (eagle.y < canvas.height / 2) {
-                let diff = canvas.height / 2 - eagle.y;
+                let diff = (canvas.height / 2) - eagle.y;
                 eagle.y = canvas.height / 2;
                 score += Math.floor(diff / 10);
-                
                 platforms.forEach(p => {
                     p.y += diff;
-                    // Si une plateforme sort par le bas, on la remet en haut
                     if (p.y > canvas.height) {
                         p.y = 0;
                         p.x = Math.random() * (canvas.width - 60);
@@ -105,11 +73,9 @@
                 });
             }
 
-            // 4. Game Over
+            // Game Over
             if (eagle.y > canvas.height) {
-                gameRunning = false;
-                alert("GAME OVER ! Score : " + score + "\nCliquez pour rejouer.");
-                location.reload();
+                eagle.y = 200; eagle.vy = 0; score = 0; // Reset auto au lieu de l'alert
             }
 
             draw();
@@ -117,23 +83,21 @@
         }
 
         function draw() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "#87CEEB";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Dessin Aigle
-            ctx.fillStyle = "#333";
+            ctx.fillStyle = "#333"; // Aigle
             ctx.fillRect(eagle.x, eagle.y, eagle.width, eagle.height);
 
-            // Dessin Ailes
-            ctx.fillStyle = "#C0C0C0";
+            ctx.fillStyle = "#C0C0C0"; // Ailes
             platforms.forEach(p => ctx.fillRect(p.x, p.y, p.width, p.height));
 
-            // Score
             ctx.fillStyle = "black";
             ctx.font = "20px Arial";
             ctx.fillText("Altitude: " + score + "m", 10, 30);
         }
 
         update();
-                </script>
+    </script>
 </body>
 </html>
