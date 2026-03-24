@@ -33,7 +33,7 @@
         for (let i = 0; i < 7; i++) {
             platforms.push({ x: Math.random() * (canvas.width - 60), y: canvas.height - (i * 80), width: 60, height: 15 });
         }
-
+platforms.push({ x: 120, y: 350, width: 80, height: 12 });
         // --- CONTRÔLES ---
         canvas.addEventListener('touchstart', (e) => {
             const touchX = e.touches[0].clientX;
