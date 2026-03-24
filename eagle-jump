@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Eagle-Jump | Powered by eagle-pi</title>
+    <style>
+        body { margin: 0; background: #000; display: flex; justify-content: center; align-items: center; height: 100vh; overflow: hidden; font-family: sans-serif; }
+        canvas { background: #87CEEB; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+    </style>
+</head>
+<body>
+
+    <canvas id="gameCanvas" width="320" height="480"></canvas>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // --- CONFIGURATION EAGLE ---
+        let eagle = {
+            x: 140,
+            y: 350,
+            width: 40,
+            height: 40,
+            vy: 0,
+            jumpPower: -10,
+            gravity: 0.4
+        };
+
+        let platforms = [];
+        let gameRunning = true;
+
+        // --- LOGIQUE PLATEFORMES (AILES) ---
+        function createPlatform(y) {
+            return {
+                x: Math.random() * (canvas.width - 60),
+                y: y,
+                width: 60,
+                height: 15
+            };
+        }
+
+        // Initialisation : on en place quelques-unes
+        for (let i = 0; i < 7; i++) {
+            platforms.push(createPlatform(i * 70));
+        }
+
+        function draw() {
+            // Effacer le canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Dessiner l'aigle (un carré pour l'instant)
+            ctx.fillStyle = "#333";
+            ctx.fillRect(eagle.x, eagle.y, eagle.width, eagle.height);
+
+            // Dessiner les plateformes (ailes)
+            ctx.fillStyle = "#C0C0C0"; // Argent
+            platforms.forEach(p => {
+                ctx.fillRect(p.x, p.y, p.width, p.height);
+            });
+        }
+
+        // Boucle de rendu
+        function update() {
+            draw();
+            if (gameRunning) requestAnimationFrame(update);
+        }
+
+        update();
+    </script>
+</body>
+</html>
