@@ -70,11 +70,11 @@
                 });
             }
 
-            // CAMÉRA & SCORE
-            if (eagle.y < canvas.height / 2) {
-                let diff = (canvas.height / 2) - eagle.y;
-                eagle.y = canvas.height / 2;
-                score += Math.floor(diff); // On score à chaque pixel monté
+                        // CAMÉRA & SCORE (Déclenchement plus sensible)
+            if (eagle.y < canvas.height * 0.7) { // On déclenche dès qu'il passe les 70% du haut
+                let diff = (canvas.height * 0.7) - eagle.y;
+                eagle.y = canvas.height * 0.7;
+                score += Math.floor(diff); 
                 
                 platforms.forEach(p => {
                     p.y += diff;
@@ -84,7 +84,6 @@
                     }
                 });
             }
-
             // Game Over (Reset)
             if (eagle.y > canvas.height) { 
                 eagle.y = 200; eagle.vy = 0; eagle.vx = 0; score = 0; 
