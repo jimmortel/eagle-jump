@@ -5,85 +5,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Eagle Jump Gold</title>
     <style>
-        body { margin: 0; background: #000; overflow: hidden; display: flex; justify-content: center; align-items: center; height: 100vh; width: 100vw; position: fixed; }
-        canvas { background: #87CEEB; touch-action: none; width: 90vw; height: 85vh; max-width: 320px; max-height: 480px; object-fit: contain; border: 3px solid #D4AF37; }
+        body { margin: 0; background: #1a1a1a; overflow: hidden; display: flex; justify-content: center; align-items: center; height: 100vh; width: 100vw; position: fixed; font-family: Arial, sans-serif; }
+        canvas { background: #4facfe; touch-action: none; width: 90vw; height: 85vh; max-width: 320px; max-height: 480px; border: 4px solid #D4AF37; border-radius: 12px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
     </style>
 </head>
 <body>
     <canvas id="gameCanvas"></canvas>
-
-        <script>
-        const canvas = document.getElementById('gameCanvas');
+    <script>
+                const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         canvas.width = 320;
         canvas.height = 480;
 
-        // --- CHARGEMENT DES IMAGES ---
         const imgEagle = new Image();
-        // Force le nom exact que tu as sur GitHub
         imgEagle.src = '1000009474.png'; 
 
         let eagleLoaded = false;
         imgEagle.onload = () => { eagleLoaded = true; };
-        imgEagle.onerror = () => { console.log("L'image n'a pas pu charger"); };
 
-        // --- VARIABLES JEU ---
-        let eagle = { x: 130, y: 100, width: 60, height: 60, vy: 0, vx: 0, jumpPower: -12, gravity: 0.45 };
-        let platforms = [];
-        let score = 0;
-        let highscore = localStorage.getItem('eagleRecord') || 0;
-        let moveLeft = false;
-        let moveRight = false;
-
-        // Génération des plateformes
-        for (let i = 0; i < 7; i++) {
-            platforms.push({ x: Math.random() * (canvas.width - 60), y: canvas.height - (i * 80), width: 60, height: 12 });
-        }
-        // Plateforme de départ GARANTIE
-        platforms.push({ x: 110, y: 380, width: 100, height: 15 });
-
-        // --- CONTRÔLES ---
-        canvas.addEventListener('touchstart', (e) => {
-            const touchX = e.touches[0].clientX;
-            if (touchX < window.innerWidth / 2) moveLeft = true;
-            else moveRight = true;
-            e.preventDefault();
-        }, {passive: false});
-        canvas.addEventListener('touchend', () => { moveLeft = false; moveRight = false; });
-
-        function update() {
-            if (moveLeft) eagle.vx = -7;
-            else if (moveRight) eagle.vx = 7;
-            else eagle.vx *= 0.8;
-
-            eagle.x += eagle.vx;
-            eagle.vy += eagle.gravity;
-            eagle.y += eagle.vy;
-
-            if (eagle.x + eagle.width < 0) eagle.x = canvas.width;
-            if (eagle.x > canvas.width) eagle.x = -eagle.width;
-
-            if (eagle.vy > 0) {
-                platforms.forEach(p => {
-                    if (eagle.x + eagle.width > p.x && eagle.x < p.x + p.width &&
-                        eagle.y + eagle.height > p.y && eagle.y + eagle.height < p.y + p.height + eagle.vy) {
-                        eagle.vy = eagle.jumpPower;
-                    }
-    <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        canvas.width = 320;
-        canvas.height = 480;
-
-        // --- CHARGEMENT DES IMAGES (On force le JPG qui est sur ton GitHub !) ---
-        const imgEagle = new Image();
-        imgEagle.src = '1000009475.jpg'; 
-
-        let eagleLoaded = false;
-        imgEagle.onload = () => { eagleLoaded = true; };
-
-        // --- VARIABLES JEU ---
-        let eagle = { x: 130, y: 100, width: 60, height: 60, vy: 0, vx: 0, jumpPower: -12, gravity: 0.45 };
+        let eagle = { x: 130, y: 100, width: 65, height: 40, vy: 0, vx: 0, jumpPower: -12, gravity: 0.45 };
         let platforms = [];
         let score = 0;
         let highscore = localStorage.getItem('eagleRecord') || 0;
@@ -95,7 +35,6 @@
         }
         platforms.push({ x: 110, y: 380, width: 100, height: 15 });
 
-        // --- CONTRÔLES ---
         canvas.addEventListener('touchstart', (e) => {
             const touchX = e.touches[0].clientX;
             if (touchX < window.innerWidth / 2) moveLeft = true;
@@ -103,8 +42,7 @@
             e.preventDefault();
         }, {passive: false});
         canvas.addEventListener('touchend', () => { moveLeft = false; moveRight = false; });
-
-        function update() {
+                function update() {
             if (moveLeft) eagle.vx = -7;
             else if (moveRight) eagle.vx = 7;
             else eagle.vx *= 0.8;
@@ -145,46 +83,29 @@
         }
 
         function draw() {
-    // Un ciel qui fait moins "dessin d'enfant"
-    let grd = ctx.createLinearGradient(0, 0, 0, canvas.height);
-    grd.addColorStop(0, "#4facfe"); // Bleu ciel
-    grd.addColorStop(1, "#00f2fe"); // Bleu lagon
-    ctx.fillStyle = grd;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+            let grd = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            grd.addColorStop(0, "#4facfe");
+            grd.addColorStop(1, "#00f2fe");
+            ctx.fillStyle = grd;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // DESSIN AIGLE
-    if (eagleLoaded) {
-        ctx.drawImage(imgEagle, eagle.x, eagle.y, eagle.width, eagle.height);
-    } else {
-        ctx.fillStyle = "#D4AF37"; // Or de secours
-        ctx.fillRect(eagle.x, eagle.y, eagle.width, eagle.height);
-    }
+            if (eagleLoaded) {
+                ctx.drawImage(imgEagle, eagle.x, eagle.y, eagle.width, eagle.height);
+            } else {
+                ctx.fillStyle = "#D4AF37";
+                ctx.fillRect(eagle.x, eagle.y, eagle.width, eagle.height);
+            }
 
-    // DESSIN PLATEFORMES (Look "Ailes d'Or")
-    platforms.forEach(p => {
-        ctx.fillStyle = "#B7950B"; // Ombre
-        ctx.fillRect(p.x, p.y + 4, p.width, p.height);
-        ctx.fillStyle = "#F1C40F"; // Face
-        ctx.fillRect(p.x, p.y, p.width, p.height);
-    });
+            platforms.forEach(p => {
+                ctx.fillStyle = "#B7950B"; ctx.fillRect(p.x, p.y + 4, p.width, p.height);
+                ctx.fillStyle = "#F1C40F"; ctx.fillRect(p.x, p.y, p.width, p.height);
+            });
 
-    // TEXTES PROPRES
-    ctx.fillStyle = "white";
-    ctx.shadowBlur = 4;
-    ctx.shadowColor = "black";
-    ctx.font = "bold 22px Arial";
-    ctx.fillText(score + " m", 20, 40);
-    ctx.font = "12px Arial";
-    ctx.fillText("Record: " + highscore + " m", 20, 65);
-    ctx.shadowBlur = 0; // Reset pour ne pas ralentir le jeu
-                }
-
-            // AFFICHAGE SCORE
-            ctx.fillStyle = "#2C3E50";
-            ctx.font = "bold 22px Arial";
-            ctx.fillText("Alt: " + score + "m", 15, 38);
-            ctx.font = "14px Arial";
-            ctx.fillText("Record: " + highscore + "m", 15, 62);
+            ctx.fillStyle = "white";
+            ctx.font = "bold 20px Arial";
+            ctx.fillText(score + " m", 20, 40);
+            ctx.font = "12px Arial";
+            ctx.fillText("Record: " + highscore + " m", 20, 65);
         }
         update();
     </script>
