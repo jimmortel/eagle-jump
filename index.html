@@ -38,7 +38,8 @@
 
         canvas.addEventListener('touchend', () => { moveLeft = false; moveRight = false; });
 
-        function update() {
+                function update() {
+            // Physique & Contrôles
             if (moveLeft) eagle.vx = -5;
             else if (moveRight) eagle.vx = 5;
             else eagle.vx *= 0.8;
@@ -47,9 +48,11 @@
             eagle.vy += eagle.gravity;
             eagle.y += eagle.vy;
 
+            // Wraparound horizontal
             if (eagle.x + eagle.width < 0) eagle.x = canvas.width;
             if (eagle.x > canvas.width) eagle.x = -eagle.width;
 
+            // Collision Rebond
             if (eagle.vy > 0) {
                 platforms.forEach(p => {
                     if (eagle.x + eagle.width > p.x && eagle.x < p.x + p.width &&
@@ -59,42 +62,66 @@
                 });
             }
 
+            // CAMÉRA & SCORE
             if (eagle.y < canvas.height / 2) {
                 let diff = (canvas.height / 2) - eagle.y;
                 eagle.y = canvas.height / 2;
-                score += Math.floor(diff / 10);
+                score += Math.floor(diff); // On score à chaque pixel monté
+                
                 platforms.forEach(p => {
                     p.y += diff;
-                    if (p.y > canvas.height) { p.y = 0; p.x = Math.random() * (canvas.width - 60); }
+                    if (p.y > canvas.height) { 
+                        p.y = 0; 
+                        p.x = Math.random() * (canvas.width - 60); 
+                    }
                 });
             }
 
-            if (eagle.y > canvas.height) { eagle.y = 200; eagle.vy = 0; eagle.vx = 0; score = 0; }
+            // Game Over (Reset)
+            if (eagle.y > canvas.height) { 
+                eagle.y = 200; eagle.vy = 0; eagle.vx = 0; score = 0; 
+            }
+
             draw();
             requestAnimationFrame(update);
         }
 
-                function draw() {
-            // 1. CALCUL DE LA COULEUR DU CIEL SELON L'ALTITUDE
-            let skyColor;
-            if (score < 500) {
-                skyColor = "#87CEEB"; // Bleu Jour
-            } else if (score < 1500) {
-                skyColor = "#4A90E2"; // Bleu Profond
-            } else if (score < 3000) {
-                skyColor = "#1A2A6C"; // Bleu Nuit
-            } else {
-                skyColor = "#050505"; // Espace
-            }
+        function draw() {
+            // CHANGEMENT DE CIEL SELON LE SCORE
+            let skyColor = "#87CEEB"; 
+            if (score > 100) skyColor = "#4A90E2";
+            if (score > 300) skyColor = "#1A2A6C";
+            if (score > 500) skyColor = "#050505";
 
             ctx.fillStyle = skyColor;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // 2. AJOUT DE PETITES ÉTOILES (si on est assez haut)
-            if (score > 1500) {
+            // Étoiles (si on est haut)
+            if (score > 300) {
                 ctx.fillStyle = "white";
-                for(let i=0; i<10; i++) {
-                    ctx.fillRect(Math.sin(i*score)*canvas.width, (i*50)%canvas.height, 2, 2);
+                for(let i=0; i<5; i++) {
+                    ctx.fillRect((i*70 + score/2)%canvas.width, (i*100)%canvas.height, 2, 2);
+                }
+            }
+
+            // Aigle (Triangle)
+            ctx.fillStyle = "#333";
+            ctx.beginPath();
+            ctx.moveTo(eagle.x + eagle.width/2, eagle.y);
+            ctx.lineTo(eagle.x + eagle.width, eagle.y + eagle.height);
+            ctx.lineTo(eagle.x, eagle.y + eagle.height);
+            ctx.fill();
+
+            // Plateformes
+            platforms.forEach(p => {
+                ctx.fillStyle = "#7F8C8D"; ctx.fillRect(p.x, p.y + 4, p.width, p.height);
+                ctx.fillStyle = "#BDC3C7"; ctx.fillRect(p.x, p.y, p.width, p.height);
+            });
+
+            // Affichage Score
+            ctx.fillStyle = score > 300 ? "white" : "#2C3E50";
+            ctx.font = "bold 20px Arial";
+            ctx.fillText(score + " m", 20, 40);
                 }
             }
 
