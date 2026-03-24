@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Eagle Jump</title>
+    <title>Eagle Jump Pro</title>
     <style>
         body { margin: 0; background: #000; overflow: hidden; display: flex; justify-content: center; align-items: center; height: 100vh; width: 100vw; position: fixed; }
-        canvas { background: #87CEEB; touch-action: none; max-width: 100%; max-height: 100%; object-fit: contain; }
+        canvas { background: #87CEEB; touch-action: none; width: 100%; height: 100%; max-width: 360px; max-height: 640px; object-fit: contain; border: 2px solid #333; }
     </style>
 </head>
 <body>
@@ -16,23 +16,17 @@
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
+        // Résolution fixe pour éviter l'effet "écrasé"
         canvas.width = 320;
-        canvas.height = 480;
+        canvas.height = 500;
 
-                let eagle = { 
-            x: 140, 
-            y: 300, // On le fait partir un peu plus haut
-            width: 40, 
-            height: 30, 
-            vy: 0, 
-            vx: 0, 
-            jumpPower: -13, // BOOST : on passe de -10 à -13 pour sauter plus haut
-            gravity: 0.4 
-        };
+        let eagle = { x: 140, y: 300, width: 40, height: 30, vy: 0, vx: 0, jumpPower: -13, gravity: 0.45 };
+        let platforms = [];
         let score = 0;
         let moveLeft = false;
         let moveRight = false;
 
+        // Génération initiale
         for (let i = 0; i < 7; i++) {
             platforms.push({ x: Math.random() * (canvas.width - 60), y: canvas.height - (i * 80), width: 60, height: 12 });
         }
@@ -46,21 +40,19 @@
 
         canvas.addEventListener('touchend', () => { moveLeft = false; moveRight = false; });
 
-                function update() {
-            // Physique & Contrôles
-            if (moveLeft) eagle.vx = -5;
-            else if (moveRight) eagle.vx = 5;
+        function update() {
+            if (moveLeft) eagle.vx = -6;
+            else if (moveRight) eagle.vx = 6;
             else eagle.vx *= 0.8;
 
             eagle.x += eagle.vx;
             eagle.vy += eagle.gravity;
             eagle.y += eagle.vy;
 
-            // Wraparound horizontal
             if (eagle.x + eagle.width < 0) eagle.x = canvas.width;
             if (eagle.x > canvas.width) eagle.x = -eagle.width;
 
-            // Collision Rebond
+            // Rebond
             if (eagle.vy > 0) {
                 platforms.forEach(p => {
                     if (eagle.x + eagle.width > p.x && eagle.x < p.x + p.width &&
@@ -70,48 +62,33 @@
                 });
             }
 
-                        // CAMÉRA & SCORE (Déclenchement plus sensible)
-            if (eagle.y < canvas.height * 0.7) { // On déclenche dès qu'il passe les 70% du haut
+            // SCORE & CAMÉRA (Déclenchement très bas pour forcer le score)
+            if (eagle.y < canvas.height * 0.7) {
                 let diff = (canvas.height * 0.7) - eagle.y;
                 eagle.y = canvas.height * 0.7;
-                score += Math.floor(diff); 
-                
+                score += Math.floor(diff);
                 platforms.forEach(p => {
                     p.y += diff;
-                    if (p.y > canvas.height) { 
-                        p.y = 0; 
-                        p.x = Math.random() * (canvas.width - 60); 
-                    }
+                    if (p.y > canvas.height) { p.y = 0; p.x = Math.random() * (canvas.width - 60); }
                 });
             }
-            // Game Over (Reset)
-            if (eagle.y > canvas.height) { 
-                eagle.y = 200; eagle.vy = 0; eagle.vx = 0; score = 0; 
-            }
 
+            if (eagle.y > canvas.height) { eagle.y = 300; eagle.vy = 0; eagle.vx = 0; score = 0; }
             draw();
             requestAnimationFrame(update);
         }
 
         function draw() {
-            // CHANGEMENT DE CIEL SELON LE SCORE
+            // Ciel dynamique
             let skyColor = "#87CEEB"; 
-            if (score > 100) skyColor = "#4A90E2";
-            if (score > 300) skyColor = "#1A2A6C";
-            if (score > 500) skyColor = "#050505";
+            if (score > 200) skyColor = "#4A90E2";
+            if (score > 1000) skyColor = "#1A2A6C";
+            if (score > 2500) skyColor = "#050505";
 
             ctx.fillStyle = skyColor;
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Étoiles (si on est haut)
-            if (score > 300) {
-                ctx.fillStyle = "white";
-                for(let i=0; i<5; i++) {
-                    ctx.fillRect((i*70 + score/2)%canvas.width, (i*100)%canvas.height, 2, 2);
-                }
-            }
-
-            // Aigle (Triangle)
+            // Aigle
             ctx.fillStyle = "#333";
             ctx.beginPath();
             ctx.moveTo(eagle.x + eagle.width/2, eagle.y);
@@ -125,29 +102,8 @@
                 ctx.fillStyle = "#BDC3C7"; ctx.fillRect(p.x, p.y, p.width, p.height);
             });
 
-            // Affichage Score
-            ctx.fillStyle = score > 300 ? "white" : "#2C3E50";
-            ctx.font = "bold 20px Arial";
-            ctx.fillText(score + " m", 20, 40);
-                }
-            }
-
-            // 3. DESSIN AIGLE (Triangle)
-            ctx.fillStyle = "#333";
-            ctx.beginPath();
-            ctx.moveTo(eagle.x + eagle.width/2, eagle.y);
-            ctx.lineTo(eagle.x + eagle.width, eagle.y + eagle.height);
-            ctx.lineTo(eagle.x, eagle.y + eagle.height);
-            ctx.fill();
-
-            // 4. PLATEFORMES
-            platforms.forEach(p => {
-                ctx.fillStyle = "#7F8C8D"; ctx.fillRect(p.x, p.y + 4, p.width, p.height);
-                ctx.fillStyle = "#BDC3C7"; ctx.fillRect(p.x, p.y, p.width, p.height);
-            });
-
-            // 5. SCORE (On le met en blanc si le ciel est sombre)
-            ctx.fillStyle = score > 1500 ? "white" : "#2C3E50";
+            // Score
+            ctx.fillStyle = score > 1000 ? "white" : "#2C3E50";
             ctx.font = "bold 20px Arial";
             ctx.fillText(score + " m", 20, 40);
         }
