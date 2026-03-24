@@ -145,29 +145,39 @@
         }
 
         function draw() {
-            // Un ciel avec un dégradé subtil
-            const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-            gradient.addColorStop(0, "#87CEEB");
-            gradient.addColorStop(1, "#E0F7FA");
-            ctx.fillStyle = gradient;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+    // Un ciel qui fait moins "dessin d'enfant"
+    let grd = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    grd.addColorStop(0, "#4facfe"); // Bleu ciel
+    grd.addColorStop(1, "#00f2fe"); // Bleu lagon
+    ctx.fillStyle = grd;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // DESSIN AIGLE 🦅
-            if (eagleLoaded) {
-                ctx.drawImage(imgEagle, eagle.x, eagle.y, eagle.width, eagle.height);
-            } else {
-                // Si l'image n'est TOUJOURS pas trouvée, au moins on la dessine en or
-                ctx.fillStyle = "#FBC02D";
-                ctx.fillRect(eagle.x, eagle.y, eagle.width, eagle.height);
-            }
+    // DESSIN AIGLE
+    if (eagleLoaded) {
+        ctx.drawImage(imgEagle, eagle.x, eagle.y, eagle.width, eagle.height);
+    } else {
+        ctx.fillStyle = "#D4AF37"; // Or de secours
+        ctx.fillRect(eagle.x, eagle.y, eagle.width, eagle.height);
+    }
 
-            // DESSIN PLATEFORMES ✨ (Look Or)
-            platforms.forEach(p => {
-                // Ombre
-                ctx.fillStyle = "#B7950B"; ctx.fillRect(p.x, p.y + 4, p.width, p.height);
-                // Couleur Or
-                ctx.fillStyle = "#F4D03F"; ctx.fillRect(p.x, p.y, p.width, p.height);
-            });
+    // DESSIN PLATEFORMES (Look "Ailes d'Or")
+    platforms.forEach(p => {
+        ctx.fillStyle = "#B7950B"; // Ombre
+        ctx.fillRect(p.x, p.y + 4, p.width, p.height);
+        ctx.fillStyle = "#F1C40F"; // Face
+        ctx.fillRect(p.x, p.y, p.width, p.height);
+    });
+
+    // TEXTES PROPRES
+    ctx.fillStyle = "white";
+    ctx.shadowBlur = 4;
+    ctx.shadowColor = "black";
+    ctx.font = "bold 22px Arial";
+    ctx.fillText(score + " m", 20, 40);
+    ctx.font = "12px Arial";
+    ctx.fillText("Record: " + highscore + " m", 20, 65);
+    ctx.shadowBlur = 0; // Reset pour ne pas ralentir le jeu
+                }
 
             // AFFICHAGE SCORE
             ctx.fillStyle = "#2C3E50";
