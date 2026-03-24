@@ -19,8 +19,16 @@
         canvas.width = 320;
         canvas.height = 480;
 
-        let eagle = { x: 140, y: 200, width: 40, height: 30, vy: 0, vx: 0, jumpPower: -10, gravity: 0.4 };
-        let platforms = [];
+                let eagle = { 
+            x: 140, 
+            y: 300, // On le fait partir un peu plus haut
+            width: 40, 
+            height: 30, 
+            vy: 0, 
+            vx: 0, 
+            jumpPower: -13, // BOOST : on passe de -10 à -13 pour sauter plus haut
+            gravity: 0.4 
+        };
         let score = 0;
         let moveLeft = false;
         let moveRight = false;
