@@ -1,6 +1,6 @@
 // 💜 INITIALISATION FARCASTER SDK
 if (window.farcaster && window.farcaster.sdk) {
-    window.farcaster.sdk.actions.ready();
+    window.farcaster.sdk.actions.ready(); 
 }
 const eagle = document.getElementById('eagle');
 const container = document.getElementById('game-container');
