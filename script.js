@@ -15,16 +15,39 @@ tysmSpan.innerText = balance;
 
 let currentSkin = '1000009508.png'; // Ton aigle royal de départ
 // --- 💰 SYSTÈME DE PAIEMENT RÉEL (FARCASTER x SOLANA) ---
-window.selectSkin = async function(img, price, element) {
-    // 1. Cas du Skin Gratuit (Royal)
-    if (price === 0) {
-        currentSkin = img;
-        eagle.src = img;
-        document.querySelectorAll('.shop-item').forEach(el => el.classList.remove('selected'));
-        element.classList.add('selected');
-        return;
-    }
+    // 2. Cas du Skin GOLD (Paiement 0.01 SOL avec tes réglages)
+    if (img === '1000009505.png') {
+        try {
+            if (window.farcaster && window.farcaster.sdk) {
+                
+                const result = await window.farcaster.sdk.actions.sendTransaction({
+                    chainId: "solana:mainnet", 
+                    method: "solana_sendTransaction", 
+                    params: {
+                        to: "GU5dNvMQKoUiVJvZ5HUgrv3CxtrR5ujxfHK2HPT6Z6bV",
+                        value: "10000000", // 0.01 SOL
+                        // --- TES RÉGLAGES PERSONNALISÉS ---
+                        slippage: 10,           // 10% de slippage
+                        priorityFee: 0.001,     // 0.001 SOL frais de priorité
+                        antiFrontRun: "auto"    // Protection auto
+                    }
+                });
 
+                if (result) {
+                    alert("🦅 TRANSACTION RÉUSSIE ! L'Aigle d'Or est à toi !");
+                    currentSkin = img;
+                    eagle.src = img;
+                    document.querySelectorAll('.shop-item').forEach(el => el.classList.remove('selected'));
+                    element.classList.add('selected');
+                }
+            } else {
+                alert("Ouvre le jeu dans Warpcast pour acheter ce skin !");
+            }
+        } catch (err) {
+            console.error(err);
+            alert("Paiement annulé.");
+        }
+    }
     // 2. Cas du Skin GOLD (Paiement Réel 0.01 SOL)
     if (img === '1000009509.png') {
         try {
