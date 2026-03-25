@@ -109,9 +109,10 @@ button:active { transform: scale(0.95); }
 
 .platform {
     position: absolute; 
-    width: 160px; 
-    height: 60px;
-    background: url('1000009505.png') no-repeat center;
+    width: 140px; 
+    height: 45px;
+    background: url('1000009506.png') no-repeat center;
     background-size: contain;
-    filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.5));
+    /* Petit effet de lueur pour les rendre magiques */
+    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.3));
     }
