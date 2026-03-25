@@ -1,69 +1,117 @@
-body {
-    margin: 0;
-    overflow: hidden;
-    background: linear-gradient(180deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+body { 
+    margin: 0; 
+    padding: 0; 
+    overflow: hidden; 
+    background: #0b0e11; 
+    font-family: 'Arial Black', 'Arial', sans-serif; 
+    user-select: none;
 }
 
-#game-container {
-    position: relative;
-    width: 100vw;
-    height: 100vh;
+#game-container { 
+    position: relative; 
+    width: 100vw; 
+    height: 100vh; 
+    background: linear-gradient(to top, #0f0c29, #302b63, #24243e); 
 }
 
-#ui-container {
-    position: absolute;
-    top: 10px;
-    left: 10px;
+/* --- INTERFACE DE JEU (SCORE) --- */
+#ui-container { 
+    position: absolute; 
+    top: 20px; 
+    width: 100%; 
+    display: flex; 
+    justify-content: space-around; 
+    z-index: 10; 
+    color: #FFD700; 
+    text-shadow: 2px 2px 4px #000;
+    font-size: 1.2rem;
+}
+
+/* --- MENU ET BOUTIQUE --- */
+.overlay {
+    position: absolute; 
+    inset: 0; 
+    background: rgba(0, 0, 0, 0.9);
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    justify-content: center; 
     z-index: 100;
-    color: #FFD700;
-    font-weight: bold;
-    text-shadow: 2px 2px #000;
-}
-
-/* L'AIGLE JOUEUR */
-#eagle {
-    position: absolute;
-    width: 65px;
-    height: auto;
-    z-index: 50;
-    transition: transform 0.1s;
-}
-
-/* LES PLATEFORMES EN FORME D'AILES */
-.platform {
-    position: absolute;
-    width: 200px;
-    height: 60px;
-    /* On a enlevé "images/" pour les ailes dorées de face */
-    background-image: url('1000009505.png'); 
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center;
-    filter: drop-shadow(0px 0px 5px #FFD700);
-}
-
-.hidden { display: none; }
-
-#game-over-screen {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background: rgba(0,0,0,0.85);
-    padding: 20px;
-    border: 2px solid #FFD700;
-    border-radius: 15px;
     text-align: center;
-    color: white;
-    z-index: 1000;
+}
+
+h1 { 
+    color: #FFD700; 
+    font-size: 2.5rem; 
+    margin-bottom: 20px; 
+    letter-spacing: 2px;
+}
+
+#shop-container { 
+    display: flex; 
+    gap: 15px; 
+    margin-bottom: 30px; 
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.shop-item { 
+    background: #1a1a1a; 
+    border: 3px solid #333; 
+    padding: 15px; 
+    border-radius: 15px; 
+    cursor: pointer; 
+    transition: 0.3s;
+    width: 100px;
+}
+
+.shop-item img { 
+    width: 70px; 
+    height: auto; 
+    display: block;
+    margin: 0 auto;
+}
+
+.shop-item p { 
+    color: white; 
+    font-size: 0.7rem; 
+    margin: 10px 0 0; 
+}
+
+.shop-item.selected { 
+    border-color: #FFD700; 
+    background: #2a2a00; 
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
 }
 
 button {
-    background: #FFD700;
-    border: none;
-    padding: 10px 20px;
-    font-weight: bold;
-    cursor: pointer;
-    border-radius: 5px;
+    background: #FFD700; 
+    color: #000;
+    border: none; 
+    padding: 15px 50px; 
+    font-size: 1.4rem; 
+    font-weight: bold; 
+    border-radius: 50px; 
+    cursor: pointer; 
+    transition: 0.2s;
+    box-shadow: 0 5px 20px rgba(255, 215, 0, 0.4);
 }
+
+button:active { transform: scale(0.95); }
+
+/* --- ÉLÉMENTS DE JEU --- */
+#eagle { 
+    position: absolute; 
+    width: 65px; 
+    height: auto; 
+    z-index: 50; 
+}
+
+.platform {
+    position: absolute; 
+    width: 160px; 
+    height: 60px;
+    background: url('1000009505.png') no-repeat center;
+    background-size: contain;
+    filter: drop-shadow(0 0 5px rgba(255, 215, 0, 0.5));
+    }
