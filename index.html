@@ -17,19 +17,18 @@
         <div id="menu-screen" class="overlay">
             <h1>EAGLE JUMP</h1>
             
-                <div class="shop-item selected" onclick="selectSkin('1000009508.png', 0, this)">
-        <img src="1000009508.png" style="width:70px">
-        <p>ROYAL (Gratuit)</p>
-    </div>
-    <div class="shop-item" onclick="selectSkin('1000009505.png', 0.01, this)">
-        <img src="1000009505.png" style="width:70px">
-        <p>GOLD (0.01 SOL)</p>
-    </div>
+                        <div id="shop-container">
+            <div class="shop-item selected" onclick="selectSkin('1000009508.png', 0, this)">
+                <img src="1000009508.png" style="width:70px">
+                <p>ROYAL (Gratuit)</p>
             </div>
-
-            <button onclick="startGame()">S'ENVOLER</button>
-            <p style="color: #FFD700; margin-top: 20px; font-size: 0.9rem;">Record : 519m</p>
+            <div class="shop-item" onclick="selectSkin('1000009505.png', 0.01, this)">
+                <img src="1000009505.png" style="width:70px">
+                <p>GOLD (0.01 SOL)</p>
+            </div>
         </div>
+
+        <button onclick="startGame()">S'ENVOLER</button>
 
         <img id="eagle" src="1000009508.png" alt="Eagle Player">
     </div>
