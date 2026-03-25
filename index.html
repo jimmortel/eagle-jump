@@ -29,6 +29,13 @@
         </div>
 
         <button onclick="startGame()">S'ENVOLER</button>
+            <button onclick="showLeaderboard()" style="background: #444; margin-top: 10px; font-size: 14px;">CLASSEMENT</button>
+
+<div id="leaderboard-modal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:#222; padding:20px; border:2px solid #FFD700; z-index:100; border-radius:15px; width:80%;">
+    <h3 style="color:#FFD700; text-align:center;">TOP AIGLES 🦅</h3>
+    <div id="leaderboard-list" style="color:white; font-size:14px; margin-bottom:15px;">Chargement...</div>
+    <button onclick="document.getElementById('leaderboard-modal').style.display='none'">FERMER</button>
+</div>
 
         <img id="eagle" src="1000009508.png" alt="Eagle Player">
     </div>
