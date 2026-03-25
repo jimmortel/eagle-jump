@@ -173,5 +173,52 @@ function update() {
     }
     requestAnimationFrame(update);
 }
+// --- 🏆 LOGIQUE DU LEADERBOARD & IDENTITÉ ---
 
+let playerName = "Aigle Anonyme";
+
+// 1. Récupère le nom du joueur Farcaster au démarrage
+async function loadFarcasterUser() {
+    if (window.farcaster && window.farcaster.sdk) {
+        try {
+            const context = await window.farcaster.sdk.context;
+            if (context && context.user) {
+                playerName = context.user.displayName || context.user.username;
+                // Met à jour l'affichage en haut de l'écran
+                const display = document.getElementById('score-display');
+                if(display) display.innerText = `ALTITUDE : 0m | PILOTE : ${playerName}`;
+            }
+        } catch (e) { console.error("Erreur SDK:", e); }
+    }
+}
+loadFarcasterUser();
+
+// 2. Affiche la fenêtre du classement
+function showLeaderboard() {
+    const modal = document.getElementById('leaderboard-modal');
+    const list = document.getElementById('leaderboard-list');
+    modal.style.display = 'block';
+    
+    const myRecord = localStorage.getItem('eagleHighScore') || 0;
+    
+    // Simulation du Top (en attendant une base de données réelle)
+    list.innerHTML = `
+        1. @dwr.eth - 1250m<br>
+        2. @vbuterin - 980m<br>
+        3. <span style="color:#FFD700">TOI (${playerName}) - ${myRecord}m</span><br>
+        4. @aigle_fan - 420m
+    `;
+}
+
+// 3. Sauvegarde le score (à appeler dans ta fonction gameOver)
+function saveFinalScore(score) {
+    const oldRecord = localStorage.getItem('eagleHighScore') || 0;
+    if (score > oldRecord) {
+        localStorage.setItem('eagleHighScore', score);
+        // Optionnel : Envoi au SDK Farcaster si tu as le stockage activé
+        if (window.farcaster?.sdk?.actions?.setStorage) {
+            window.farcaster.sdk.actions.setStorage({ key: "high_score", value: score.toString() });
+        }
+    }
+}
 update();
