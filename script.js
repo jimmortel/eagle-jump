@@ -13,8 +13,7 @@ let balance = parseInt(localStorage.getItem('tysm_balance')) || 0;
 let bestScore = parseInt(localStorage.getItem('tysm_best')) || 0;
 tysmSpan.innerText = balance;
 
-let currentSkin = '1000009508.png';
-
+let currentSkin = '1000009508.png'; // Ton aigle royal de départ
 // --- 💰 SYSTÈME DE PAIEMENT RÉEL (FARCASTER x SOLANA) ---
 window.selectSkin = async function(img, price, element) {
     // 1. Cas du Skin Gratuit (Royal)
