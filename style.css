@@ -33,9 +33,10 @@ body {
 /* LES PLATEFORMES EN FORME D'AILES */
 .platform {
     position: absolute;
-    width: 200px; /* Largeur de l'obstacle */
+    width: 200px;
     height: 60px;
-    background-image: url('images/1000009509.png'); /* Ton aigle d'or */
+    /* On a enlevé "images/" pour les ailes dorées de face */
+    background-image: url('1000009505.png'); 
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
