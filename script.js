@@ -1,7 +1,3 @@
-// 💜 INITIALISATION FARCASTER SDK
-if (window.farcaster && window.farcaster.sdk) {
-    window.farcaster.sdk.actions.ready(); 
-}
 const eagle = document.getElementById('eagle');
 const container = document.getElementById('game-container');
 const scoreSpan = document.getElementById('current-score');
@@ -221,5 +217,9 @@ function saveFinalScore(score) {
             window.farcaster.sdk.actions.setStorage({ key: "high_score", value: score.toString() });
         }
     }
+}
+// 💜 INITIALISATION FARCASTER SDK
+if (window.farcaster && window.farcaster.sdk) {
+    window.farcaster.sdk.actions.ready(); 
 }
 update();
