@@ -2,37 +2,54 @@ const eagle = document.getElementById('eagle');
 const container = document.getElementById('game-container');
 const scoreSpan = document.getElementById('current-score');
 
+// Variables de Physique
 let gravity = 0.4;
 let velocity = 0;
 let isPlaying = false;
 let score = 0;
+
+// Variables de Position
+let eagleY = window.innerHeight - 200; // Départ en bas
+let eagleX = window.innerWidth / 2 - 30; // Centré
+
 let platforms = [];
+let platformCount = 8; // Nombre de plateformes à l'écran
 
-// Position de départ
-let eagleY = 200;
-let eagleX = 50;
+// --- 🎮 CONTRÔLES (MODE VERTICAL) ---
 
-function jump() {
+// Suivre la souris ou le doigt pour aller à gauche/droite
+window.addEventListener('mousemove', (e) => {
     if (!isPlaying) isPlaying = true;
-    velocity = -8;
-}
+    eagleX = e.clientX - 30; // Centre l'aigle sur le curseur
+});
 
-window.addEventListener('mousedown', jump);
-window.addEventListener('touchstart', jump);
+window.addEventListener('touchmove', (e) => {
+    if (!isPlaying) isPlaying = true;
+    eagleX = e.touches[0].clientX - 30;
+});
 
-function createPlatform(x) {
+// --- 🦅 GENERATION DES AILES-PLATEFORMES ---
+
+function createPlatform(y) {
     const plat = document.createElement('div');
     plat.className = 'platform';
-    let y = Math.random() * (window.innerHeight - 150) + 50;
+    
+    // Position horizontale aléatoire sur toute la largeur
+    let x = Math.random() * (window.innerWidth - 150);
+    
     plat.style.left = x + 'px';
     plat.style.top = y + 'px';
     container.appendChild(plat);
     return { element: plat, x: x, y: y };
 }
 
-// Initialisation des premières ailes
-platforms.push(createPlatform(window.innerWidth));
-platforms.push(createPlatform(window.innerWidth + 400));
+// Initialisation de la première volée d'ailes
+for (let i = 0; i < platformCount; i++) {
+    // Les plateformes montent de plus en plus haut
+    platforms.push(createPlatform(window.innerHeight - i * 130 - 150));
+}
+
+// --- 🔄 BOUCLE DE JEU ---
 
 function update() {
     if (!isPlaying) {
@@ -40,43 +57,56 @@ function update() {
         return;
     }
 
+    // Applique la gravité et fait bouger l'aigle (Axe Y)
     velocity += gravity;
     eagleY += velocity;
     
-    // Animation inclinaison de l'aigle
-    let rotation = velocity * 2;
-    eagle.style.transform = `rotate(${rotation}deg)`;
-    eagle.style.top = eagleY + 'px';
+    // Applique le mouvement horizontal (Axe X)
     eagle.style.left = eagleX + 'px';
+    eagle.style.top = eagleY + 'px';
 
-    platforms.forEach((p) => {
-        p.x -= 4; // Vitesse de défilement
-        p.element.style.left = p.x + 'px';
-
-        // Collision rebond sur les ailes d'aigle
-        if (eagleX + 50 > p.x && eagleX < p.x + 180 &&
-            eagleY + 50 > p.y && eagleY + 50 < p.y + 30 && velocity > 0) {
-            velocity = -10;
-            score += 10;
-            scoreSpan.innerText = score;
-        }
-
-        // Recyclage des plateformes quand elles sortent de l'écran
-        if (p.x < -200) {
-            p.x = window.innerWidth;
-            p.y = Math.random() * (window.innerHeight - 150) + 50;
+    // 🎥 EFFET DE CAMÉRA (SCROLL)
+    // Si l'aigle dépasse le milieu de l'écran, tout descend
+    if (eagleY < window.innerHeight / 2) {
+        let scrollAmount = window.innerHeight / 2 - eagleY;
+        eagleY = window.innerHeight / 2; // L'aigle reste au milieu
+        
+        platforms.forEach(p => {
+            p.y += scrollAmount; // Tout descend
             p.element.style.top = p.y + 'px';
+            
+            // Si une aile sort par le bas, on la remonte en haut
+            if (p.y > window.innerHeight) {
+                p.y = 0; // Remonte tout en haut
+                p.x = Math.random() * (window.innerWidth - 150);
+                p.element.style.left = p.x + 'px';
+                p.element.style.top = p.y + 'px';
+                
+                // On augmente le score quand on remonte une plateforme
+                score++;
+                scoreSpan.innerText = score;
+            }
+        });
+    }
+
+    // 💥 GESTION DES REBONDS (COLLISION)
+    platforms.forEach(p => {
+        // L'aigle touche le dessus d'une aile dorée en tombant
+        if (eagleX + 60 > p.x && eagleX < p.x + 180 &&
+            eagleY + 60 > p.y && eagleY + 60 < p.y + 15 && velocity > 0) {
+            velocity = -12; // Gros rebond !
         }
     });
 
-    // Game Over si on touche les bords
-    if (eagleY > window.innerHeight || eagleY < -100) {
+    // 💀 GAME OVER (CHUTE)
+    if (eagleY > window.innerHeight) {
         isPlaying = false;
-        alert("Game Over ! Score: " + score);
+        alert("CHUTE MORTELLE ! Score : " + score + "m");
         location.reload(); 
     }
 
     requestAnimationFrame(update);
 }
 
+// Lancement
 update();
