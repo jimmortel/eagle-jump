@@ -167,8 +167,9 @@ function update() {
                 bestScore = score;
                 localStorage.setItem('tysm_best', bestScore);
             }
-            alert("GAME OVER ! Score : " + score + "m");
-            location.reload(); 
+                    alert("GAME OVER ! Score : " + score + "m");
+        saveFinalScore(score); // <--- AJOUTE CETTE LIGNE ICI
+        location.reload();
         }
     }
     requestAnimationFrame(update);
