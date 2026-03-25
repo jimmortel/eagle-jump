@@ -15,14 +15,49 @@ tysmSpan.innerText = balance;
 
 let currentSkin = '1000009508.png';
 
-window.selectSkin = function(img, price, element) {
-    if (balance >= price) {
+// --- 💰 SYSTÈME DE PAIEMENT RÉEL (FARCASTER x SOLANA) ---
+window.selectSkin = async function(img, price, element) {
+    // 1. Cas du Skin Gratuit (Royal)
+    if (price === 0) {
         currentSkin = img;
         eagle.src = img;
         document.querySelectorAll('.shop-item').forEach(el => el.classList.remove('selected'));
         element.classList.add('selected');
-    } else {
-        alert("Il te manque " + (price - balance) + " $TYSM ! Envole-toi pour en gagner.");
+        return;
+    }
+
+    // 2. Cas du Skin GOLD (Paiement Réel 0.01 SOL)
+    if (img === '1000009509.png') {
+        try {
+            // On vérifie si on est bien dans l'environnement Farcaster
+            if (window.farcaster && window.farcaster.sdk) {
+                
+                // On lance la transaction via le wallet intégré de l'utilisateur
+                // Montant : 0.01 SOL (soit ~2$) vers ton adresse
+                const result = await window.farcaster.sdk.actions.sendTransaction({
+                    chainId: "eip155:10", // Standard pour les transactions via le SDK
+                    method: "eth_sendTransaction", 
+                    params: {
+                        to: "GU5dNvMQKoUiVJvZ5HUgrv3CxtrR5ujxfHK2HPT6Z6bV",
+                        value: "10000000000000000" // Équivalent technique de 0.01 SOL
+                    }
+                });
+
+                // Si la transaction est validée par le wallet
+                if (result) {
+                    alert("🦅 TRANSACTION RÉUSSIE ! L'Aigle d'Or est à toi !");
+                    currentSkin = img;
+                    eagle.src = img;
+                    document.querySelectorAll('.shop-item').forEach(el => el.classList.remove('selected'));
+                    element.classList.add('selected');
+                }
+            } else {
+                alert("Ouvre le jeu dans Warpcast pour acheter ce skin avec ton Wallet !");
+            }
+        } catch (err) {
+            console.error(err);
+            alert("Paiement annulé. L'aigle reste au nid !");
+        }
     }
 };
 
