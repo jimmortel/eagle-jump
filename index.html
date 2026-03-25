@@ -2,17 +2,38 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Eagle Jump - Royal Degen</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Eagle Jump - Royal Shop</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div id="game-container">
         <div id="ui-container">
-            <div id="score-display">Score: <span id="current-score">0</span>m</div>
+            <div id="score-display">ALTITUDE: <span id="current-score">0</span>m</div>
+            <div id="balance-display">💰 <span id="tysm-balance">0</span> $TYSM</div>
         </div>
-        <img id="eagle" src="1000009507.png" alt="Aigle Joueur">
+
+        <div id="menu-screen" class="overlay">
+            <h1>EAGLE JUMP</h1>
+            
+            <div id="shop-container">
+                <div class="shop-item selected" onclick="selectSkin('1000009508.png', 0, this)">
+                    <img src="1000009508.png">
+                    <p>ROYAL (Gratuit)</p>
+                </div>
+                <div class="shop-item" onclick="selectSkin('1000009509.png', 33500, this)">
+                    <img src="1000009509.png">
+                    <p>GOLD (33.5k)</p>
+                </div>
+            </div>
+
+            <button onclick="startGame()">S'ENVOLER</button>
+            <p style="color: #FFD700; margin-top: 20px; font-size: 0.9rem;">Record : 519m</p>
+        </div>
+
+        <img id="eagle" src="1000009508.png" alt="Eagle Player">
     </div>
+
     <script src="script.js"></script>
 </body>
 </html>
