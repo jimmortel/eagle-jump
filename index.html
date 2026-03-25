@@ -2,102 +2,25 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Eagle Jump Gold</title>
-    <style>
-        body { margin: 0; background: #1a1a1a; overflow: hidden; display: flex; justify-content: center; align-items: center; height: 100vh; width: 100vw; position: fixed; font-family: Arial, sans-serif; }
-        canvas { background: #4facfe; touch-action: none; width: 90vw; height: 85vh; max-width: 320px; max-height: 480px; border: 4px solid #D4AF37; border-radius: 12px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eagle Jump - Royal Degen Edition</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <canvas id="gameCanvas"></canvas>
-    <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        canvas.width = 320;
-        canvas.height = 480;
-                const imgEagle = new Image();
-              imgEagle.src = 'images.jpeg'; 
+    <div id="game-container">
+        <div id="ui-container">
+            <div id="score-display">Score: <span id="current-score">0</span>m</div>
+            <div id="high-score-display">Best: <span id="best-score">519</span>m</div>
+        </div>
 
-        let eagleLoaded = false;
-        imgEagle.onload = () => { eagleLoaded = true; };
+        <img id="eagle" src="images/1000009512.png" alt="Aigle Joueur">
 
-        let eagle = { x: 130, y: 100, width: 65, height: 40, vy: 0, vx: 0, jumpPower: -12, gravity: 0.45 };
-        let platforms = [];
-        let score = 0;
-        let highscore = localStorage.getItem('eagleRecord') || 0;
-        let moveLeft = false;
-        let moveRight = false;
-
-        for (let i = 0; i < 7; i++) {
-            platforms.push({ x: Math.random() * (canvas.width - 60), y: canvas.height - (i * 80), width: 60, height: 12 });
-        }
-        platforms.push({ x: 110, y: 380, width: 100, height: 15 });
-
-        canvas.addEventListener('touchstart', (e) => {
-            const touchX = e.touches[0].clientX;
-            if (touchX < window.innerWidth / 2) moveLeft = true;
-            else moveRight = true;
-            e.preventDefault();
-        }, {passive: false});
-        canvas.addEventListener('touchend', () => { moveLeft = false; moveRight = false; });
-                function update() {
-            if (moveLeft) eagle.vx = -7;
-            else if (moveRight) eagle.vx = 7;
-            else eagle.vx *= 0.8;
-            eagle.x += eagle.vx;
-            eagle.vy += eagle.gravity;
-            eagle.y += eagle.vy;
-            if (eagle.x + eagle.width < 0) eagle.x = canvas.width;
-            if (eagle.x > canvas.width) eagle.x = -eagle.width;
-            if (eagle.vy > 0) {
-                platforms.forEach(p => {
-                    if (eagle.x + eagle.width > p.x && eagle.x < p.x + p.width &&
-                        eagle.y + eagle.height > p.y && eagle.y + eagle.height < p.y + p.height + eagle.vy) {
-                        eagle.vy = eagle.jumpPower;
-                    }
-                });
-            }
-            if (eagle.y < canvas.height * 0.7) {
-                let diff = (canvas.height * 0.7) - eagle.y;
-                eagle.y = canvas.height * 0.7;
-                score += Math.floor(diff);
-                platforms.forEach(p => {
-                    p.y += diff;
-                    if (p.y > canvas.height) { p.y = 0; p.x = Math.random() * (canvas.width - 60); }
-                });
-            }
-            if (eagle.y > canvas.height) { 
-                if (score > highscore) { highscore = score; localStorage.setItem('eagleRecord', highscore); }
-                eagle.y = 100; eagle.vy = 0; score = 0; 
-            }
-            draw();
-            requestAnimationFrame(update);
-        }
-
-        function draw() {
-            let grd = ctx.createLinearGradient(0, 0, 0, canvas.height);
-            grd.addColorStop(0, "#4facfe");
-            grd.addColorStop(1, "#00f2fe");
-            ctx.fillStyle = grd;
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            if (eagleLoaded) {
-                ctx.drawImage(imgEagle, eagle.x, eagle.y, eagle.width, eagle.height);
-            } else {
-                ctx.fillStyle = "#D4AF37";
-                ctx.fillRect(eagle.x, eagle.y, eagle.width, eagle.height);
-            }
-            platforms.forEach(p => {
-                ctx.fillStyle = "#B7950B"; ctx.fillRect(p.x, p.y + 4, p.width, p.height);
-                ctx.fillStyle = "#F1C40F"; ctx.fillRect(p.x, p.y, p.width, p.height);
-            });
-            ctx.fillStyle = "white";
-            ctx.font = "bold 20px Arial";
-            ctx.fillText(score + " m", 20, 40);
-            ctx.font = "12px Arial";
-            ctx.fillText("Record: " + highscore + " m", 20, 65);
-        }
-        update();
-    </script>
+        <div id="game-over-screen" class="hidden">
+            <h1>GAME OVER</h1>
+            <p>Ton score : <span id="final-score">0</span>m</p>
+            <button id="restart-btn">Rejouer</button>
+        </div>
+    </div>
+    <script src="script.js"></script>
 </body>
 </html>
