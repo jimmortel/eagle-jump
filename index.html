@@ -60,7 +60,10 @@
                     });
                 }
                 platforms.forEach(p => { if (eagleX + 50 > p.x && eagleX < p.x + 130 && eagleY + 60 > p.y && eagleY + 60 < p.y + 20 && velocity > 0) velocity = -12; });
-                if (eagleY > window.innerHeight) location.reload();
+                                if (eagleY > window.innerHeight) {
+                    isPlaying = false;
+                    menuScreen.style.display = 'flex';
+                                             }
             }
             requestAnimationFrame(update);
         }
