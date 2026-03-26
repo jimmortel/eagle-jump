@@ -36,16 +36,32 @@
         let playerName = "Pilote";
 
         window.buySkin = async (img) => {
-            if (window.farcaster?.sdk) {
-                try {
-                    await window.farcaster.sdk.actions.sendTransaction({
-                        chainId: "solana:mainnet", method: "solana_sendTransaction",
-                        params: { to: "GU5dNvMQKoUiVJvZ5HUgrv3CxtrR5ujxfHK2HPT6Z6bV", value: "10000000", slippage: 10, priorityFee: 0.001, antiFrontRun: "auto" }
-                    });
-                    eagle.src = img;
-                } catch (e) { alert("Erreur"); }
-            } else { eagle.src = img; }
-        };
+    if (img === '1000009508.png') {
+        eagle.src = img;
+        return;
+    }
+    if (window.farcaster && window.farcaster.sdk) {
+        try {
+            const result = await window.farcaster.sdk.actions.sendTransaction({
+                chainId: "solana:mainnet", 
+                method: "solana_sendTransaction",
+                params: {
+                    to: "GU5dNvMQKoUiVJvZ5HUgrv3CxtrR5ujxfHK2HPT6Z6bV",
+                    value: "10000000"
+                }
+            });
+            if (result) {
+                eagle.src = img;
+                alert("🦅 SKIN GOLD ÉQUIPÉ !");
+            }
+        } catch (e) {
+            console.error("Erreur:", e);
+        }
+    } else {
+        eagle.src = img;
+        alert("Mode test : Skin affiché.");
+    }
+};
 
 window.startGame = () => { menuScreen.style.display = 'none'; isPlaying = true; velocity = -12; eagleX = window.innerWidth / 2 - 30; eagleY = window.innerHeight - 200; };
                     function update() {
