@@ -3,50 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <script src="https://cdn.jsdelivr.net/npm/@farcaster/frame-sdk/dist/index.min.js"></script>
-    <title>Eagle Jump - Royal Shop</title>
-    <link rel="stylesheet" href="style.css">
-         <meta name="fc:frame" content="vNext" />
+    <title>Eagle Jump</title>
+    <meta name="fc:frame" content="vNext" />
     <meta name="fc:frame:image" content="https://eagle-jump.vercel.app/1000009508.png" />
-    <meta name="fc:frame:button:1" content="🦅 JOUER MAINTENANT" />
+    <meta name="fc:frame:button:1" content="🦅 JOUER" />
     <meta name="fc:frame:button:1:action" content="link" />
     <meta name="fc:frame:button:1:target" content="https://eagle-jump.vercel.app/" />
-    <meta property="og:title" content="Eagle Jump" />
-    <meta property="og:image" content="https://eagle-jump.vercel.app/1000009508.png" />
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/@farcaster/frame-sdk/dist/index.min.js"></script>
 </head>
 <body>
     <div id="game-container">
         <div id="ui-container">
-            <div id="score-display">ALTITUDE: <span id="current-score">0</span>m</div>
-            <div id="balance-display">💰 <span id="tysm-balance">0</span> $TYSM</div>
+            <div id="score-display">ALTITUDE : 0m</div>
+            <div id="balance-display">💰 <span id="tysm-balance">0</span></div>
         </div>
-
+        <img id="eagle" src="1000009508.png" alt="Eagle">
         <div id="menu-screen" class="overlay">
             <h1>EAGLE JUMP</h1>
-            
-                        <div id="shop-container">
-            <div class="shop-item selected" onclick="selectSkin('1000009508.png', 0, this)">
-                <img src="1000009508.png" style="width:70px">
-                <p>ROYAL (Gratuit)</p>
-            </div>
-            <div class="shop-item" onclick="selectSkin('1000009505.png', 0.01, this)">
-                <img src="1000009505.png" style="width:70px">
-                <p>GOLD (0.01 SOL)</p>
+            <button class="btn-primary" onclick="window.startGame()">VOLER !</button>
+            <div class="shop-item" onclick="window.buySkin('1000009509.png')">
+                <img src="1000009509.png" style="width:50px"><p>Gold (0.01 SOL)</p>
             </div>
         </div>
-
-        <button onclick="startGame()">S'ENVOLER</button>
-            <button onclick="showLeaderboard()" style="background: #444; margin-top: 10px; font-size: 14px;">CLASSEMENT</button>
-
-<div id="leaderboard-modal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:#222; padding:20px; border:2px solid #FFD700; z-index:100; border-radius:15px; width:80%;">
-    <h3 style="color:#FFD700; text-align:center;">TOP AIGLES 🦅</h3>
-    <div id="leaderboard-list" style="color:white; font-size:14px; margin-bottom:15px;">Chargement...</div>
-    <button onclick="document.getElementById('leaderboard-modal').style.display='none'">FERMER</button>
-</div>
-
-        <img id="eagle" src="1000009508.png" alt="Eagle Player">
     </div>
+        <script>
+        const eagle = document.getElementById('eagle');
+        const scoreSpan = document.getElementById('score-display');
+        const menuScreen = document.getElementById('menu-screen');
+        let gravity = 0.4, velocity = 0, isPlaying = false, score = 0;
+        let eagleY = window.innerHeight - 200, eagleX = window.innerWidth / 2 - 30, platforms = [];
+        let playerName = "Pilote";
 
-    <script src="script.js"></script>
+        window.buySkin = async (img) => {
+            if (window.farcaster?.sdk) {
+                try {
+                    await window.farcaster.sdk.actions.sendTransaction({
+                        chainId: "solana:mainnet", method: "solana_sendTransaction",
+                        params: { to: "GU5dNvMQKoUiVJvZ5HUgrv3CxtrR5ujxfHK2HPT6Z6bV", value: "10000000", slippage: 10, priorityFee: 0.001, antiFrontRun: "auto" }
+                    });
+                    eagle.src = img;
+                } catch (e) { alert("Erreur"); }
+            } else { eagle.src = img; }
+        };
+
+        window.startGame = () => { menuScreen.style.display = 'none'; isPlaying = true; velocity = -12; };
+                    function update() {
+            if (isPlaying) {
+                velocity += gravity; eagleY += velocity;
+                eagle.style.left = eagleX + 'px'; eagle.style.top = eagleY + 'px';
+                if (eagleY < window.innerHeight / 2) {
+                    let s = window.innerHeight / 2 - eagleY; eagleY = window.innerHeight / 2;
+                    platforms.forEach(p => {
+                        p.y += s; p.element.style.top = p.y + 'px';
+                        if (p.y > window.innerHeight) { p.y = 0; score++; scoreSpan.innerText = `ALTITUDE : ${score}m | ${playerName}`; }
+                    });
+                }
+                platforms.forEach(p => { if (eagleX + 50 > p.x && eagleX < p.x + 130 && eagleY + 60 > p.y && eagleY + 60 < p.y + 20 && velocity > 0) velocity = -12; });
+                if (eagleY > window.innerHeight) location.reload();
+            }
+            requestAnimationFrame(update);
+        }
+        async function init() {
+            if (window.farcaster?.sdk) {
+                await window.farcaster.sdk.actions.ready();
+                const ctx = await window.farcaster.sdk.context;
+                if (ctx?.user) playerName = ctx.user.username;
+            }
+            for (let i = 0; i < 8; i++) {
+                const plat = document.createElement('div'); plat.className = 'platform';
+                let x = Math.random() * (window.innerWidth - 130), y = window.innerHeight - i * 130 - 150;
+                plat.style.left = x + 'px'; plat.style.top = y + 'px';
+                document.getElementById('game-container').appendChild(plat);
+                platforms.push({ element: plat, x: x, y: y });
+            }
+            update();
+        }
+        window.addEventListener('touchmove', (e) => { if(isPlaying) eagleX = e.touches[0].clientX - 30; }, {passive: false});
+        init();
+    </script>
 </body>
 </html>
