@@ -47,7 +47,7 @@
             } else { eagle.src = img; }
         };
 
-        window.startGame = () => { menuScreen.style.display = 'none'; isPlaying = true; velocity = -12; };
+window.startGame = () => { menuScreen.style.display = 'none'; isPlaying = true; velocity = -12; eagleX = window.innerWidth / 2 - 30; eagleY = window.innerHeight - 200; };
                     function update() {
             if (isPlaying) {
                 velocity += gravity; eagleY += velocity;
