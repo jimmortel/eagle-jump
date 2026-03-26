@@ -218,8 +218,21 @@ function saveFinalScore(score) {
         }
     }
 }
-// 💜 INITIALISATION FARCASTER SDK
-if (window.farcaster && window.farcaster.sdk) {
-    window.farcaster.sdk.actions.ready(); 
+// 💜 INITIALISATION INTELLIGENTE
+async function initGame() {
+    if (window.farcaster && window.farcaster.sdk) {
+        try {
+            await window.farcaster.sdk.actions.ready();
+            console.log("SDK Farcaster prêt !");
+        } catch (e) {
+            console.error("Erreur SDK:", e);
+        }
+    } else {
+        console.log("Mode Web Classique (Hors Farcaster)");
+    }
+    
+    // On lance la boucle de rendu ici, une seule fois
+    update();
 }
-update();
+
+initGame();
