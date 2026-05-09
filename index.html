@@ -3,27 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Eagle Jump</title>
-    <meta name="fc:frame" content="vNext" />
-    <meta name="fc:frame:image" content="https://eagle-jump.vercel.app/1000009508.png" />
-    <meta name="fc:frame:button:1" content="🦅 JOUER" />
-    <meta name="fc:frame:button:1:action" content="link" />
-    <meta name="fc:frame:button:1:target" content="https://eagle-jump.vercel.app/" />
-    <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.jsdelivr.net/npm/@farcaster/frame-sdk/dist/index.min.js"></script>
+    <title>Eagle Jump 🦅</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/index.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="access.js"></script>
+    <style>
+        body { margin: 0; padding: 0; overflow: hidden; background: #87CEEB; font-family: Arial, sans-serif; touch-action: none; }
+        #game-container { position: relative; width: 100vw; height: 100vh; background: linear-gradient(to bottom, #001133, #87CEEB); }
+        #ui-container { position: absolute; top: 10px; width: 100%; display: flex; justify-content: space-between; padding: 0 20px; box-sizing: border-box; z-index: 10; font-weight: bold; color: white; text-shadow: 2px 2px 4px #000; }
+        #eagle { position: absolute; width: 60px; height: 60px; z-index: 5; transition: transform 0.1s; }
+        .platform { position: absolute; width: 100px; height: 15px; background: #5d4037; border-radius: 10px; border-bottom: 4px solid #3e2723; }
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 100; color: white; text-align: center; }
+        h1 { font-size: 3rem; margin-bottom: 20px; color: gold; text-shadow: 0 0 20px orange; }
+        .btn-primary { background: #ff4444; color: white; border: 4px solid white; padding: 15px 40px; font-size: 1.5rem; font-weight: 900; border-radius: 50px; cursor: pointer; margin-bottom: 20px; }
+        .shop-item { background: rgba(255,255,255,0.1); border: 1px solid gold; padding: 10px; border-radius: 15px; cursor: pointer; display: flex; align-items: center; gap: 10px; }
+        #overlay-start { z-index: 101; }
+    </style>
 </head>
 <body>
+    <div id="overlay-start" class="overlay">
+        <button class="btn-primary" onclick="handleEagleStart()">ENTRER DANS L'ELITE NEST (10 $TALON)</button>
+    </div>
+
     <div id="game-container">
         <div id="ui-container">
             <div id="score-display">ALTITUDE : 0m</div>
-            <div id="balance-display">💰 <span id="tysm-balance">0</span></div>
+            <div id="status-sync">SYNC: $TALON 🦅</div>
         </div>
         <img id="eagle" src="1000009508.png" alt="Eagle">
-        <div id="menu-screen" class="overlay">
-            <h1>EAGLE JUMP</h1>
-            <button class="btn-primary" onclick="window.startGame()">VOLER !</button>
+        
+        <div id="menu-screen" class="overlay" style="display:none;">
+            <h1>VOL TERMINÉ</h1>
+            <button class="btn-primary" onclick="window.startGame()">REPARTIR !</button>
+            <button id="revive-btn" class="bg-blue-600 border-2 border-white p-3 rounded-xl mb-4 font-bold" onclick="handleRevive()">REVIVE (5 $TALON)</button>
             <div class="shop-item" onclick="window.buySkin('1000009507.png')">
-                <img src="1000009507.png" style="width:50px"><p>Gold (0.01 SOL)</p>
+                <img src="1000009507.png" style="width:40px"><p>Skin Gold (10 $TALON)</p>
             </div>
         </div>
     </div>
@@ -31,75 +45,105 @@
         const eagle = document.getElementById('eagle');
         const scoreSpan = document.getElementById('score-display');
         const menuScreen = document.getElementById('menu-screen');
+        const SUPABASE_URL = "https://rjkyjqmydriagpiatbsr.supabase.co";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJqa3lqcW15ZHJpYWdwaWF0YnNyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQwMzQ5MTEsImV4cCI6MjA4OTYxMDkxMX0.4-uEBo_SFqfMgPpTuDQRxTYLeUoI_ZMZlwtkBJzK_X0";
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
         let gravity = 0.4, velocity = 0, isPlaying = false, score = 0;
-        let eagleY = window.innerHeight - 200, eagleX = window.innerWidth / 2 - 30, platforms = [];
+        let eagleY = 0, eagleX = 0, platforms = [];
         let playerName = "Pilote";
 
-        window.buySkin = async (img) => {
-    if (img === '1000009508.png') {
-        eagle.src = img;
-        return;
-    }
-    if (window.farcaster && window.farcaster.sdk) {
-        try {
-            const result = await window.farcaster.sdk.actions.sendTransaction({
-                chainId: "solana:mainnet", 
-                method: "solana_sendTransaction",
-                params: {
-                    to: "GU5dNvMQKoUiVJvZ5HUgrv3CxtrR5ujxfHK2HPT6Z6bV",
-                    value: "10000000"
-                }
-            });
-            if (result) {
-                eagle.src = img;
-                alert("🦅 SKIN GOLD ÉQUIPÉ !");
+        async function handleEagleStart() {
+            const access = await checkGameAccess('jump');
+            if(access) {
+                document.getElementById('overlay-start').style.display = 'none';
+                init();
             }
-        } catch (e) {
-            console.error("Erreur:", e);
         }
-    } else {
-        eagle.src = img;
-        alert("Mode test : Skin affiché.");
-    }
-};
 
-window.startGame = () => { menuScreen.style.display = 'none'; isPlaying = true; velocity = -12; eagleX = window.innerWidth / 2 - 30; eagleY = window.innerHeight - 200; };
-                    function update() {
+        window.buySkin = async (img) => {
+            if (confirm("Acheter ce skin permanent pour 10 $TALON ?")) {
+                const provider = new ethers.BrowserProvider(window.ethereum);
+                const signer = await provider.getSigner();
+                if (await executeTalonPayment(signer, 10)) {
+                    eagle.src = img;
+                    alert("🦅 SKIN GOLD ÉQUIPÉ !");
+                }
+            }
+        };
+
+        async function handleRevive() {
+            const provider = new ethers.BrowserProvider(window.ethereum);
+            const signer = await provider.getSigner();
+            if (await executeTalonPayment(signer, 5)) {
+                menuScreen.style.display = 'none';
+                velocity = -15; 
+                eagleY = window.innerHeight / 2;
+                isPlaying = true;
+            }
+        }
+
+        window.startGame = () => {
+            if(score > 0) saveScore(score);
+            score = 0;
+            scoreSpan.innerText = `ALTITUDE : 0m`;
+            menuScreen.style.display = 'none';
+            isPlaying = true;
+            velocity = -12;
+            eagleX = window.innerWidth / 2 - 30;
+            eagleY = window.innerHeight - 200;
+        };
+
+        function saveScore(s) {
+            supabaseClient.from('leaderboard').insert([{ username: playerName, score: s, game: 'jump' }]);
+        }
+
+        function update() {
             if (isPlaying) {
                 velocity += gravity; eagleY += velocity;
                 eagle.style.left = eagleX + 'px'; eagle.style.top = eagleY + 'px';
+                
                 if (eagleY < window.innerHeight / 2) {
                     let s = window.innerHeight / 2 - eagleY; eagleY = window.innerHeight / 2;
                     platforms.forEach(p => {
                         p.y += s; p.element.style.top = p.y + 'px';
-                        if (p.y > window.innerHeight) { p.y = 0; score++; scoreSpan.innerText = `ALTITUDE : ${score}m | ${playerName}`; }
+                        if (p.y > window.innerHeight) { 
+                            p.y = 0; p.x = Math.random() * (window.innerWidth - 100);
+                            p.element.style.left = p.x + 'px';
+                            score++; 
+                            scoreSpan.innerText = `ALTITUDE : ${score}m | ${playerName}`; 
+                        }
                     });
                 }
-                platforms.forEach(p => { if (eagleX + 50 > p.x && eagleX < p.x + 130 && eagleY + 60 > p.y && eagleY + 60 < p.y + 20 && velocity > 0) velocity = -12; });
-                                if (eagleY > window.innerHeight) {
+
+                platforms.forEach(p => {
+                    if (eagleX + 40 > p.x && eagleX < p.x + 90 && eagleY + 55 > p.y && eagleY + 55 < p.y + 15 && velocity > 0) {
+                        velocity = -12;
+                    }
+                });
+
+                if (eagleY > window.innerHeight) {
                     isPlaying = false;
                     menuScreen.style.display = 'flex';
-                                             }
+                }
             }
             requestAnimationFrame(update);
         }
+
         async function init() {
-            if (window.farcaster?.sdk) {
-                await window.farcaster.sdk.actions.ready();
-                const ctx = await window.farcaster.sdk.context;
-                if (ctx?.user) playerName = ctx.user.username;
-            }
-            for (let i = 0; i < 8; i++) {
+            platforms = [];
+            for (let i = 0; i < 7; i++) {
                 const plat = document.createElement('div'); plat.className = 'platform';
-                let x = Math.random() * (window.innerWidth - 130), y = window.innerHeight - i * 130 - 150;
+                let x = Math.random() * (window.innerWidth - 100), y = window.innerHeight - i * 120 - 100;
                 plat.style.left = x + 'px'; plat.style.top = y + 'px';
                 document.getElementById('game-container').appendChild(plat);
                 platforms.push({ element: plat, x: x, y: y });
             }
             update();
         }
-        window.addEventListener('touchmove', (e) => { if(isPlaying) eagleX = e.touches[0].clientX - 30; }, {passive: false});
-        init();
+
+        window.addEventListener('touchstart', (e) => { if(isPlaying) eagleX = e.touches[0].clientX - 30; });
+        window.addEventListener('touchmove', (e) => { if(isPlaying) eagleX = e.touches[0].clientX - 30; });
     </script>
 </body>
 </html>
